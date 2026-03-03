@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Calendar,
@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navigation = [
   { name: "Tableau de bord", href: "/", icon: LayoutDashboard },
@@ -25,6 +26,13 @@ const navigation = [
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar flex flex-col">
@@ -34,7 +42,7 @@ const AdminSidebar = () => {
         </div>
         <div>
           <h1 className="text-sidebar-foreground font-semibold text-sm">VDE Platform</h1>
-          <p className="text-sidebar-muted text-xs">Gestion des sessions</p>
+          <p className="text-sidebar-muted text-xs truncate max-w-[140px]">{user?.email}</p>
         </div>
       </div>
 
@@ -59,7 +67,7 @@ const AdminSidebar = () => {
           <Settings className="w-4 h-4 shrink-0" />
           Paramètres
         </NavLink>
-        <button className="sidebar-link w-full">
+        <button onClick={handleLogout} className="sidebar-link w-full">
           <LogOut className="w-4 h-4 shrink-0" />
           Déconnexion
         </button>
