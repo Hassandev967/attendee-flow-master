@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Sessions from "./pages/Sessions";
+import SessionsPublic from "./pages/SessionsPublic";
 import SessionDetail from "./pages/SessionDetail";
 import InscriptionForm from "./pages/InscriptionForm";
 import Participants from "./pages/Participants";
@@ -26,6 +27,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/formations" element={<SessionsPublic />} />
           <Route path="/sessions" element={<Sessions />} />
           <Route path="/sessions/:id" element={<SessionDetail />} />
           <Route path="/inscription/:sessionId" element={<InscriptionForm />} />
