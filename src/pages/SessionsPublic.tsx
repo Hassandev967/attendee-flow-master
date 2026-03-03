@@ -2,11 +2,16 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, Users, Monitor, Building2, Wifi, Filter } from "lucide-react";
+import { Calendar, MapPin, Users, Monitor, Building2, Wifi, Filter, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { QRCodeSVG } from "qrcode.react";
+import vdeLogo from "@/assets/vde-logo.png";
+
+const BASE_URL = window.location.origin;
 
 const modeIcons = {
   presentiel: Building2,
@@ -22,6 +27,7 @@ const modeLabels = {
 
 const SessionsPublic = () => {
   const [selectedThematique, setSelectedThematique] = useState<string | null>(null);
+  const [qrSession, setQrSession] = useState<{ id: string; titre: string } | null>(null);
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ["public-sessions"],
@@ -36,7 +42,6 @@ const SessionsPublic = () => {
     },
   });
 
-  // Extract unique thematiques
   const thematiques = sessions
     ? [...new Set(sessions.map((s) => s.thematique))].sort()
     : [];
@@ -48,11 +53,14 @@ const SessionsPublic = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-foreground">Nos formations</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Choisissez une formation puis inscrivez-vous à la session qui vous convient
-          </p>
+        <div className="max-w-5xl mx-auto px-4 py-6 flex items-center gap-4">
+          <img src={vdeLogo} alt="VDE" className="w-10 h-10 rounded-lg" />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">FORMATION PLATEFORME</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Choisissez une formation puis inscrivez-vous à la session qui vous convient
+            </p>
+          </div>
         </div>
       </header>
 
@@ -115,7 +123,6 @@ const SessionsPublic = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Group sessions by thematique */}
             {(selectedThematique ? [selectedThematique] : thematiques.length > 0 ? thematiques : [""]).map((th) => {
               const group = filteredSessions?.filter((s) => (th ? s.thematique === th : true)) ?? [];
               if (!group.length) return null;
@@ -165,7 +172,15 @@ const SessionsPublic = () => {
                               </span>
                             </div>
                           </div>
-                          <div className="shrink-0">
+                          <div className="shrink-0 flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => setQrSession({ id: session.id, titre: session.titre })}
+                              title="QR code d'inscription"
+                            >
+                              <QrCode className="w-4 h-4" />
+                            </Button>
                             {placesRestantes > 0 ? (
                               <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
                                 <Link to={`/inscription/${session.id}`}>S'inscrire</Link>
@@ -184,6 +199,31 @@ const SessionsPublic = () => {
           </div>
         )}
       </main>
+
+      {/* QR Code Dialog */}
+      <Dialog open={!!qrSession} onOpenChange={() => setQrSession(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle className="text-center">Scanner pour s'inscrire</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">{qrSession?.titre}</p>
+          <div className="flex justify-center">
+            <div className="bg-background rounded-xl p-6 border border-border inline-block">
+              <QRCodeSVG
+                value={`${BASE_URL}/inscription/${qrSession?.id}`}
+                size={200}
+                level="H"
+                includeMargin
+                bgColor="transparent"
+                fgColor="hsl(222, 47%, 11%)"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Scannez ce QR code avec votre téléphone pour accéder au formulaire d'inscription
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

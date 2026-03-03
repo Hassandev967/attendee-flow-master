@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Calendar, MapPin, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle, Loader2, Download, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { QRCodeSVG } from "qrcode.react";
+import vdeLogo from "@/assets/vde-logo.png";
 
 const inscriptionSchema = z.object({
   nom: z.string().trim().min(1, "Requis").max(100),
@@ -31,6 +33,8 @@ const InscriptionForm = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
+  const [qrCodeValue, setQrCodeValue] = useState("");
+  const [inscriptionInfo, setInscriptionInfo] = useState<{ nom: string; prenom: string } | null>(null);
   const [formData, setFormData] = useState<Partial<InscriptionData>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -71,18 +75,24 @@ const InscriptionForm = () => {
         .single();
       if (pErr) throw pErr;
 
+      const qrCode = crypto.randomUUID();
+
       // Create inscription
       const { error: iErr } = await supabase.from("inscriptions").insert({
         session_id: sessionId!,
         participant_id: participant.id,
         mode_participation: data.mode_participation,
-        qr_code: crypto.randomUUID(),
+        qr_code: qrCode,
       });
       if (iErr) throw iErr;
+
+      return { qrCode, nom: data.nom, prenom: data.prenom };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      setQrCodeValue(result.qrCode);
+      setInscriptionInfo({ nom: result.nom, prenom: result.prenom });
       setSubmitted(true);
-      toast({ title: "Inscription confirmée !", description: "Vous recevrez un email de confirmation." });
+      toast({ title: "Inscription confirmée !", description: "Votre QR code a été généré." });
     },
     onError: (err: any) => {
       toast({ title: "Erreur", description: err.message || "Une erreur est survenue.", variant: "destructive" });
@@ -108,6 +118,25 @@ const InscriptionForm = () => {
     mutation.mutate(result.data);
   };
 
+  const handleDownloadQR = () => {
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const link = document.createElement("a");
+      link.download = `qr-inscription-${qrCodeValue.slice(0, 8)}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -127,17 +156,47 @@ const InscriptionForm = () => {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="stat-card max-w-md w-full text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-success" />
+        <div className="stat-card max-w-md w-full text-center py-10">
+          <div className="flex justify-center mb-4">
+            <img src={vdeLogo} alt="VDE" className="w-10 h-10 rounded-lg" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground mb-2">Inscription confirmée !</h2>
-          <p className="text-muted-foreground text-sm mb-6">
-            Vous recevrez un email de confirmation avec votre QR code unique pour l'émargement.
+          <div className="w-14 h-14 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-7 h-7 text-success" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground mb-1">Inscription confirmée !</h2>
+          <p className="text-sm text-muted-foreground mb-1">
+            {inscriptionInfo?.prenom} {inscriptionInfo?.nom}
           </p>
-          <Button variant="outline" onClick={() => navigate("/formations")}>
-            Voir les autres sessions
-          </Button>
+          <p className="text-xs text-muted-foreground mb-6">
+            {session.titre} — {format(new Date(session.date_session), "d MMMM yyyy", { locale: fr })}
+          </p>
+
+          <div className="bg-background rounded-xl p-6 border border-border mb-4 inline-block">
+            <QRCodeSVG
+              id="qr-code-svg"
+              value={qrCodeValue}
+              size={200}
+              level="H"
+              includeMargin
+              bgColor="transparent"
+              fgColor="hsl(222, 47%, 11%)"
+            />
+          </div>
+
+          <p className="text-xs text-muted-foreground mb-4">
+            <QrCode className="w-3.5 h-3.5 inline mr-1" />
+            Présentez ce QR code le jour de la formation pour l'émargement
+          </p>
+
+          <div className="flex flex-col gap-2">
+            <Button onClick={handleDownloadQR} variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              Télécharger le QR code
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/formations")} className="text-sm">
+              Voir les autres formations
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -149,12 +208,15 @@ const InscriptionForm = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <button
-          onClick={() => navigate("/formations")}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Retour aux sessions
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate("/formations")}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Retour
+          </button>
+          <img src={vdeLogo} alt="VDE" className="w-8 h-8 rounded-lg" />
+        </div>
 
         <div className="stat-card mb-6">
           <span className="text-xs font-medium text-accent uppercase tracking-wide">{session.thematique}</span>
@@ -195,7 +257,7 @@ const InscriptionForm = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="telephone">Téléphone *</Label>
-              <Input id="telephone" type="tel" value={formData.telephone || ""} onChange={(e) => updateField("telephone", e.target.value)} placeholder="+33 6 12 34 56 78" />
+              <Input id="telephone" type="tel" value={formData.telephone || ""} onChange={(e) => updateField("telephone", e.target.value)} placeholder="+225 07 12 34 56 78" />
               <FieldError field="telephone" />
             </div>
           </div>
