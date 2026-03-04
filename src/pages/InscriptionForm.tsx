@@ -225,7 +225,7 @@ const InscriptionForm = () => {
               <Download className="w-4 h-4" />
               Télécharger le QR code
             </Button>
-            <Button variant="ghost" onClick={() => navigate("/formations")} className="text-sm">
+            <Button variant="ghost" onClick={() => navigate("/")} className="text-sm">
               Voir les autres formations
             </Button>
           </div>
@@ -242,7 +242,7 @@ const InscriptionForm = () => {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => navigate("/formations")}
+            onClick={() => navigate("/")}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Retour

@@ -41,14 +41,19 @@ const SessionsPublic = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex items-center gap-4">
-          <img src={vdeLogo} alt="ACIEX" className="w-10 h-10 rounded-lg" />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">FORMATION PLATEFORME</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              Choisissez une formation puis inscrivez-vous
-            </p>
+        <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img src={vdeLogo} alt="ACIEX" className="w-10 h-10 rounded-lg" />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">FORMATION PLATEFORME</h1>
+              <p className="text-muted-foreground text-sm mt-0.5">
+                Choisissez une formation puis inscrivez-vous
+              </p>
+            </div>
           </div>
+          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Espace admin
+          </Link>
         </div>
       </header>
 
