@@ -13,12 +13,12 @@ import { useAuth } from "@/hooks/useAuth";
 import vdeLogo from "@/assets/vde-logo.png";
 
 const navigation = [
-  { name: "Tableau de bord", href: "/", icon: LayoutDashboard },
-  { name: "Formations", href: "/sessions", icon: Calendar },
-  { name: "Participants", href: "/participants", icon: Users },
-  { name: "Émargement", href: "/emargement", icon: ClipboardCheck },
-  { name: "Reporting", href: "/reporting", icon: BarChart3 },
-  { name: "Attestations", href: "/attestations", icon: Award },
+  { name: "Tableau de bord", href: "/admin", icon: LayoutDashboard },
+  { name: "Formations", href: "/admin/sessions", icon: Calendar },
+  { name: "Participants", href: "/admin/participants", icon: Users },
+  { name: "Émargement", href: "/admin/emargement", icon: ClipboardCheck },
+  { name: "Reporting", href: "/admin/reporting", icon: BarChart3 },
+  { name: "Attestations", href: "/admin/attestations", icon: Award },
 ];
 
 const AdminSidebar = () => {
@@ -58,7 +58,7 @@ const AdminSidebar = () => {
       </nav>
 
       <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
-        <NavLink to="/settings" className="sidebar-link">
+        <NavLink to="/admin/settings" className="sidebar-link">
           <Settings className="w-4 h-4 shrink-0" />
           Paramètres
         </NavLink>
