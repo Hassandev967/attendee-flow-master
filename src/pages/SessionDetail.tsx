@@ -1,24 +1,29 @@
 import AdminLayout from "@/components/AdminLayout";
-import SessionStatusBadge from "@/components/SessionStatusBadge";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, User, ArrowLeft, Video, Link as LinkIcon, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-const modeLabels: Record<string, string> = { presentiel: "Présentiel", en_ligne: "En ligne", hybride: "Hybride" };
+const statusColors: Record<string, string> = {
+  "A venir": "bg-info/10 text-info",
+  "En cours": "bg-accent/10 text-accent",
+  "Terminée": "bg-success/10 text-success",
+  "Annulée": "bg-destructive/10 text-destructive",
+};
 
 const SessionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: session, isLoading } = useQuery({
-    queryKey: ["session-detail", id],
+  const { data: formation, isLoading } = useQuery({
+    queryKey: ["formation-detail", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("sessions")
+        .from("formations")
         .select("*, inscriptions(count)")
         .eq("id", id!)
         .single();
@@ -38,20 +43,20 @@ const SessionDetail = () => {
     );
   }
 
-  if (!session) {
+  if (!formation) {
     return (
-      <AdminLayout title="Session introuvable">
-        <p className="text-muted-foreground">Cette session n'existe pas.</p>
+      <AdminLayout title="Formation introuvable">
+        <p className="text-muted-foreground">Cette formation n'existe pas.</p>
       </AdminLayout>
     );
   }
 
-  const inscrits = (session.inscriptions as any)?.[0]?.count ?? 0;
-  const tauxRemplissage = session.places > 0 ? Math.round((inscrits / session.places) * 100) : 0;
-  const inscriptionUrl = `${window.location.origin}/inscription/${session.id}`;
+  const inscrits = (formation.inscriptions as any)?.[0]?.count ?? 0;
+  const tauxRemplissage = formation.places > 0 ? Math.round((inscrits / formation.places) * 100) : 0;
+  const inscriptionUrl = `${window.location.origin}/inscription/${formation.id}`;
 
   return (
-    <AdminLayout title={session.titre} subtitle={session.thematique}>
+    <AdminLayout title={formation.titre} subtitle={formation.theme}>
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
@@ -63,31 +68,37 @@ const SessionDetail = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="stat-card">
             <div className="flex items-center gap-3 mb-4">
-              <SessionStatusBadge status={session.statut} />
-              <span className="text-xs font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground">
-                {modeLabels[session.mode] || session.mode}
-              </span>
+              <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-xs`}>
+                {formation.statut}
+              </Badge>
             </div>
-            {session.description && (
-              <p className="text-muted-foreground leading-relaxed">{session.description}</p>
-            )}
 
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div className="flex items-center gap-3 text-sm">
                 <Calendar className="w-4 h-4 text-accent" />
-                <span>{format(new Date(session.date_session), "EEEE d MMMM yyyy", { locale: fr })}</span>
+                <span>{format(new Date(formation.date_debut), "EEEE d MMMM yyyy", { locale: fr })}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Clock className="w-4 h-4 text-accent" />
-                <span>{session.horaire}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <MapPin className="w-4 h-4 text-accent" />
-                <span>{session.lieu}</span>
-              </div>
+              {formation.duree && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Clock className="w-4 h-4 text-accent" />
+                  <span>{formation.duree}</span>
+                </div>
+              )}
+              {formation.lieu && (
+                <div className="flex items-center gap-3 text-sm">
+                  <MapPin className="w-4 h-4 text-accent" />
+                  <span>{formation.lieu}</span>
+                </div>
+              )}
+              {formation.formateur && (
+                <div className="flex items-center gap-3 text-sm">
+                  <User className="w-4 h-4 text-accent" />
+                  <span>{formation.formateur}</span>
+                </div>
+              )}
               <div className="flex items-center gap-3 text-sm">
                 <Users className="w-4 h-4 text-accent" />
-                <span>{inscrits}/{session.places} inscrits</span>
+                <span>{inscrits}/{formation.places} inscrits</span>
               </div>
             </div>
           </div>
@@ -104,9 +115,7 @@ const SessionDetail = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(inscriptionUrl);
-                }}
+                onClick={() => navigator.clipboard.writeText(inscriptionUrl)}
               >
                 Copier
               </Button>
@@ -125,19 +134,13 @@ const SessionDetail = () => {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {session.places - inscrits} places restantes
+              {formation.places - inscrits} places restantes
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              <Video className="w-4 h-4 mr-2" />
-              Lancer l'émargement
-            </Button>
-            <Button variant="outline" className="w-full" onClick={() => window.open(inscriptionUrl, "_blank")}>
-              Voir formulaire d'inscription
-            </Button>
-          </div>
+          <Button variant="outline" className="w-full" onClick={() => window.open(inscriptionUrl, "_blank")}>
+            Voir formulaire d'inscription
+          </Button>
         </div>
       </div>
     </AdminLayout>

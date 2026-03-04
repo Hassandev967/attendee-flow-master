@@ -1,151 +1,134 @@
 import AdminLayout from "@/components/AdminLayout";
-import { sessions, participants, emargements } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { QrCode, CheckCircle, Clock, Users, Scan, WifiOff } from "lucide-react";
+import { CheckCircle, Clock, Users, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
 
 const Emargement = () => {
-  const [selectedSession, setSelectedSession] = useState<string>("4");
-  const session = sessions.find((s) => s.id === selectedSession);
+  const [selectedFormation, setSelectedFormation] = useState<string>("");
 
-  const sessionEmargements = emargements.filter((e) => e.sessionId === selectedSession);
-  const participantMap = Object.fromEntries(participants.map((p) => [p.id, p]));
+  const { data: formations } = useQuery({
+    queryKey: ["emargement-formations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("formations")
+        .select("id, titre, statut")
+        .order("date_debut", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  const [scannedIds, setScannedIds] = useState<Set<string>>(
-    new Set(sessionEmargements.map((e) => e.participantId))
-  );
+  const { data: inscriptions, isLoading, refetch } = useQuery({
+    queryKey: ["emargement-inscriptions", selectedFormation],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_inscriptions")
+        .select("*")
+        .eq("formation_id", selectedFormation);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedFormation,
+  });
 
-  const handleScan = (participantId: string) => {
-    setScannedIds((prev) => {
-      const next = new Set(prev);
-      next.add(participantId);
-      return next;
-    });
-    const p = participantMap[participantId];
-    toast({
-      title: "Émargement enregistré",
-      description: `${p?.prenom} ${p?.nom} – ${format(new Date(), "HH:mm:ss")}`,
-    });
+  const handleMarquerPresent = async (inscriptionId: string) => {
+    const { error } = await supabase.from("presences").upsert({
+      inscription_id: inscriptionId,
+      present: true,
+      enregistre_le: new Date().toISOString(),
+    }, { onConflict: "inscription_id" });
+
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Présence enregistrée" });
+      refetch();
+    }
   };
 
-  const tauxPresence = session ? Math.round((scannedIds.size / session.inscrits) * 100) : 0;
+  const presents = inscriptions?.filter((i) => i.present === true).length ?? 0;
+  const total = inscriptions?.length ?? 0;
+  const tauxPresence = total > 0 ? Math.round((presents / total) * 100) : 0;
 
   return (
-    <AdminLayout title="Émargement" subtitle="Suivi de présence en temps réel">
+    <AdminLayout title="Émargement" subtitle="Suivi de présence">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left panel */}
         <div className="lg:w-80 space-y-4">
           <div className="stat-card">
-            <label className="text-sm font-medium text-foreground mb-2 block">Session</label>
-            <Select value={selectedSession} onValueChange={setSelectedSession}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <label className="text-sm font-medium text-foreground mb-2 block">Formation</label>
+            <Select value={selectedFormation} onValueChange={setSelectedFormation}>
+              <SelectTrigger><SelectValue placeholder="Sélectionner une formation" /></SelectTrigger>
               <SelectContent>
-                {sessions.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.titre}</SelectItem>
+                {formations?.map((f) => (
+                  <SelectItem key={f.id} value={f.id}>{f.titre}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {session && (
-            <>
-              <div className="stat-card text-center">
-                <p className="text-sm text-muted-foreground mb-1">Taux de présence</p>
-                <p className="text-4xl font-bold text-foreground">{tauxPresence}%</p>
-                <div className="w-full bg-muted rounded-full h-2.5 mt-3">
-                  <div
-                    className="bg-accent h-2.5 rounded-full transition-all duration-500"
-                    style={{ width: `${tauxPresence}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>{scannedIds.size} présents</span>
-                  <span>{session.inscrits} inscrits</span>
-                </div>
+          {selectedFormation && (
+            <div className="stat-card text-center">
+              <p className="text-sm text-muted-foreground mb-1">Taux de présence</p>
+              <p className="text-4xl font-bold text-foreground">{tauxPresence}%</p>
+              <div className="w-full bg-muted rounded-full h-2.5 mt-3">
+                <div
+                  className="bg-accent h-2.5 rounded-full transition-all duration-500"
+                  style={{ width: `${tauxPresence}%` }}
+                />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="stat-card text-center py-4">
-                  <QrCode className="w-5 h-5 text-accent mx-auto mb-1" />
-                  <p className="text-lg font-bold text-foreground">
-                    {[...scannedIds].filter((id) => {
-                      const e = sessionEmargements.find((em) => em.participantId === id);
-                      return !e || e.mode === "qr_code";
-                    }).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Présentiel</p>
-                </div>
-                <div className="stat-card text-center py-4">
-                  <WifiOff className="w-5 h-5 text-info mx-auto mb-1" />
-                  <p className="text-lg font-bold text-foreground">
-                    {[...scannedIds].filter((id) => {
-                      const e = sessionEmargements.find((em) => em.participantId === id);
-                      return e && e.mode === "lien_en_ligne";
-                    }).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">En ligne</p>
-                </div>
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <span>{presents} présents</span>
+                <span>{total} inscrits</span>
               </div>
-
-              <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                <Scan className="w-4 h-4 mr-2" />
-                Scanner un QR code
-              </Button>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Right panel - participant list */}
         <div className="flex-1">
-          <div className="stat-card overflow-hidden p-0">
-            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Liste des inscrits
-              </h3>
-              <Badge variant="secondary" className="bg-accent/10 text-accent border-0">
-                {scannedIds.size}/{session?.inscrits ?? 0}
-              </Badge>
+          {!selectedFormation ? (
+            <div className="stat-card text-center py-16">
+              <Users className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-muted-foreground">Sélectionnez une formation pour voir les inscrits.</p>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Participant</TableHead>
-                  <TableHead>Entreprise</TableHead>
-                  <TableHead>Mode</TableHead>
-                  <TableHead>Horodatage</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {participants.map((p) => {
-                  const isPresent = scannedIds.has(p.id);
-                  const emarg = sessionEmargements.find((e) => e.participantId === p.id);
-                  return (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.prenom} {p.nom}</TableCell>
-                      <TableCell className="text-muted-foreground">{p.entreprise}</TableCell>
+          ) : isLoading ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="stat-card overflow-hidden p-0">
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Liste des inscrits
+                </h3>
+                <Badge variant="secondary" className="bg-accent/10 text-accent border-0">
+                  {presents}/{total}
+                </Badge>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Participant</TableHead>
+                    <TableHead>Entreprise</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {inscriptions?.map((i) => (
+                    <TableRow key={i.inscription_id}>
+                      <TableCell className="font-medium">{i.nom_dirigeant}</TableCell>
+                      <TableCell>{i.nom_entreprise}</TableCell>
+                      <TableCell className="text-muted-foreground">{i.email}</TableCell>
                       <TableCell>
-                        {emarg ? (
-                          <Badge variant="secondary" className="text-xs border-0">
-                            {emarg.mode === "qr_code" ? "QR Code" : "En ligne"}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {emarg ? format(new Date(emarg.horodatage), "HH:mm:ss") : "—"}
-                      </TableCell>
-                      <TableCell>
-                        {isPresent ? (
+                        {i.present ? (
                           <span className="flex items-center gap-1.5 text-success text-sm font-medium">
                             <CheckCircle className="w-3.5 h-3.5" /> Présent
                           </span>
@@ -156,11 +139,11 @@ const Emargement = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {!isPresent && (
+                        {!i.present && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleScan(p.id)}
+                            onClick={() => handleMarquerPresent(i.inscription_id as string)}
                             className="text-xs"
                           >
                             Émarger
@@ -168,11 +151,18 @@ const Emargement = () => {
                         )}
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                  ))}
+                  {inscriptions?.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        Aucun inscrit pour cette formation.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>

@@ -4,24 +4,21 @@ import {
   Calendar,
   Users,
   ClipboardCheck,
-  Bell,
   BarChart3,
   Award,
-  Video,
   Settings,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import vdeLogo from "@/assets/vde-logo.png";
 
 const navigation = [
   { name: "Tableau de bord", href: "/", icon: LayoutDashboard },
-  { name: "Sessions", href: "/sessions", icon: Calendar },
+  { name: "Formations", href: "/sessions", icon: Calendar },
   { name: "Participants", href: "/participants", icon: Users },
   { name: "Émargement", href: "/emargement", icon: ClipboardCheck },
-  { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Reporting", href: "/reporting", icon: BarChart3 },
   { name: "Attestations", href: "/attestations", icon: Award },
-  { name: "Hybride", href: "/hybride", icon: Video },
 ];
 
 const AdminSidebar = () => {
@@ -37,11 +34,9 @@ const AdminSidebar = () => {
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar flex flex-col">
       <div className="flex items-center gap-3 px-6 py-6 border-b border-sidebar-border">
-        <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center">
-          <span className="text-sidebar-primary-foreground font-bold text-sm">VDE</span>
-        </div>
+        <img src={vdeLogo} alt="ACIEX" className="w-9 h-9 rounded-lg" />
         <div>
-          <h1 className="text-sidebar-foreground font-semibold text-sm">VDE Platform</h1>
+          <h1 className="text-sidebar-foreground font-semibold text-sm">FORMATION PLATEFORME</h1>
           <p className="text-sidebar-muted text-xs truncate max-w-[140px]">{user?.email}</p>
         </div>
       </div>

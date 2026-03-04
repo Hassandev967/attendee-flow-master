@@ -12,10 +12,8 @@ import SessionDetail from "./pages/SessionDetail";
 import InscriptionForm from "./pages/InscriptionForm";
 import Participants from "./pages/Participants";
 import Emargement from "./pages/Emargement";
-import Notifications from "./pages/Notifications";
 import Reporting from "./pages/Reporting";
 import Attestations from "./pages/Attestations";
-import Hybride from "./pages/Hybride";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -41,10 +39,8 @@ const App = () => (
             <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetail /></ProtectedRoute>} />
             <Route path="/participants" element={<ProtectedRoute><Participants /></ProtectedRoute>} />
             <Route path="/emargement" element={<ProtectedRoute><Emargement /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/reporting" element={<ProtectedRoute><Reporting /></ProtectedRoute>} />
             <Route path="/attestations" element={<ProtectedRoute><Attestations /></ProtectedRoute>} />
-            <Route path="/hybride" element={<ProtectedRoute><Hybride /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />

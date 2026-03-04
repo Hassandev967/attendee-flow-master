@@ -4,66 +4,57 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import type { Database } from "@/integrations/supabase/types";
 
-type SessionMode = Database["public"]["Enums"]["session_mode"];
-type SessionStatut = Database["public"]["Enums"]["session_statut"];
-
-interface SessionFormData {
+interface FormationFormData {
   titre: string;
-  thematique: string;
-  description: string;
-  date_session: string;
-  horaire: string;
+  theme: string;
+  date_debut: string;
+  duree: string;
   lieu: string;
-  mode: SessionMode;
+  formateur: string;
   places: number;
-  statut: SessionStatut;
-  lien_visio: string;
+  statut: string;
 }
 
-const defaultForm: SessionFormData = {
+const defaultForm: FormationFormData = {
   titre: "",
-  thematique: "",
-  description: "",
-  date_session: "",
-  horaire: "",
+  theme: "Export",
+  date_debut: "",
+  duree: "",
   lieu: "",
-  mode: "presentiel",
+  formateur: "",
   places: 30,
-  statut: "brouillon",
-  lien_visio: "",
+  statut: "A venir",
 };
+
+const themes = ["Export", "Logistique", "Finance", "Marketing"];
 
 const CreateSessionDialog = () => {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<SessionFormData>(defaultForm);
+  const [form, setForm] = useState<FormationFormData>(defaultForm);
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (data: SessionFormData) => {
-      const { error } = await supabase.from("sessions").insert({
+    mutationFn: async (data: FormationFormData) => {
+      const { error } = await supabase.from("formations").insert({
         titre: data.titre,
-        thematique: data.thematique,
-        description: data.description || null,
-        date_session: new Date(data.date_session).toISOString(),
-        horaire: data.horaire,
-        lieu: data.lieu,
-        mode: data.mode,
+        theme: data.theme,
+        date_debut: data.date_debut,
+        duree: data.duree || null,
+        lieu: data.lieu || null,
+        formateur: data.formateur || null,
         places: data.places,
         statut: data.statut,
-        lien_visio: data.lien_visio || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Session créée !" });
-      queryClient.invalidateQueries({ queryKey: ["admin-sessions"] });
+      toast({ title: "Formation créée !" });
+      queryClient.invalidateQueries({ queryKey: ["admin-formations"] });
       setForm(defaultForm);
       setOpen(false);
     },
@@ -72,12 +63,12 @@ const CreateSessionDialog = () => {
     },
   });
 
-  const update = (field: keyof SessionFormData, value: string | number) =>
+  const update = (field: keyof FormationFormData, value: string | number) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.titre || !form.thematique || !form.date_session || !form.horaire || !form.lieu) {
+    if (!form.titre || !form.theme || !form.date_debut) {
       toast({ title: "Champs requis manquants", variant: "destructive" });
       return;
     }
@@ -89,84 +80,75 @@ const CreateSessionDialog = () => {
       <DialogTrigger asChild>
         <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
           <Plus className="w-4 h-4 mr-2" />
-          Nouvelle session
+          Nouvelle formation
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Créer une session</DialogTitle>
+          <DialogTitle>Créer une formation</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           <div className="space-y-2">
             <Label>Titre *</Label>
-            <Input value={form.titre} onChange={(e) => update("titre", e.target.value)} placeholder="Titre de la session" />
+            <Input value={form.titre} onChange={(e) => update("titre", e.target.value)} placeholder="Titre de la formation" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Thématique *</Label>
-              <Input value={form.thematique} onChange={(e) => update("thematique", e.target.value)} placeholder="Ex: Commerce international" />
+              <Label>Thème *</Label>
+              <Select value={form.theme} onValueChange={(v) => update("theme", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {themes.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Statut</Label>
-              <Select value={form.statut} onValueChange={(v) => update("statut", v as SessionStatut)}>
+              <Select value={form.statut} onValueChange={(v) => update("statut", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="brouillon">Brouillon</SelectItem>
-                  <SelectItem value="publiee">Publiée</SelectItem>
+                  <SelectItem value="A venir">À venir</SelectItem>
+                  <SelectItem value="En cours">En cours</SelectItem>
+                  <SelectItem value="Terminée">Terminée</SelectItem>
+                  <SelectItem value="Annulée">Annulée</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Date de début *</Label>
+              <Input type="date" value={form.date_debut} onChange={(e) => update("date_debut", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Durée</Label>
+              <Input value={form.duree} onChange={(e) => update("duree", e.target.value)} placeholder="Ex: 2 jours" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Lieu</Label>
+              <Input value={form.lieu} onChange={(e) => update("lieu", e.target.value)} placeholder="Ex: Abidjan, ACIEX" />
+            </div>
+            <div className="space-y-2">
+              <Label>Formateur</Label>
+              <Input value={form.formateur} onChange={(e) => update("formateur", e.target.value)} placeholder="Nom du formateur" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Description de la session..." rows={3} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Date *</Label>
-              <Input type="datetime-local" value={form.date_session} onChange={(e) => update("date_session", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Horaire affiché *</Label>
-              <Input value={form.horaire} onChange={(e) => update("horaire", e.target.value)} placeholder="Ex: 09h00 - 12h00" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Lieu *</Label>
-              <Input value={form.lieu} onChange={(e) => update("lieu", e.target.value)} placeholder="Ex: Casablanca, CCI" />
-            </div>
-            <div className="space-y-2">
-              <Label>Mode</Label>
-              <Select value={form.mode} onValueChange={(v) => update("mode", v as SessionMode)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="presentiel">Présentiel</SelectItem>
-                  <SelectItem value="en_ligne">En ligne</SelectItem>
-                  <SelectItem value="hybride">Hybride</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Nombre de places</Label>
-              <Input type="number" min={1} value={form.places} onChange={(e) => update("places", parseInt(e.target.value) || 30)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Lien visio</Label>
-              <Input value={form.lien_visio} onChange={(e) => update("lien_visio", e.target.value)} placeholder="https://..." />
-            </div>
+            <Label>Nombre de places</Label>
+            <Input type="number" min={1} value={form.places} onChange={(e) => update("places", parseInt(e.target.value) || 30)} />
           </div>
 
           <Button type="submit" disabled={mutation.isPending} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-            Créer la session
+            Créer la formation
           </Button>
         </form>
       </DialogContent>

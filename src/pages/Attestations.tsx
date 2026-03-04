@@ -1,140 +1,91 @@
 import AdminLayout from "@/components/AdminLayout";
-import { attestations } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Download, Send, CheckCircle, Clock, Award, FileText } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { CheckCircle, Clock, Award, Loader2 } from "lucide-react";
 
 const Attestations = () => {
-  const [data, setData] = useState(attestations);
+  const { data: inscriptions, isLoading } = useQuery({
+    queryKey: ["attestations-data"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_inscriptions")
+        .select("*")
+        .not("present", "is", null);
+      if (error) throw error;
+      return data;
+    },
+  });
 
-  const handleGenerate = (id: string) => {
-    setData((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, generee: true, dateGeneration: new Date().toISOString().split("T")[0] } : a))
-    );
-    toast({ title: "Attestation générée", description: "Le PDF a été créé avec succès." });
-  };
-
-  const handleSend = (id: string) => {
-    setData((prev) => prev.map((a) => (a.id === id ? { ...a, envoyee: true } : a)));
-    toast({ title: "Attestation envoyée", description: "L'email a été envoyé au participant." });
-  };
-
-  const stats = {
-    total: data.length,
-    generees: data.filter((a) => a.generee).length,
-    envoyees: data.filter((a) => a.envoyee).length,
-    enAttente: data.filter((a) => !a.generee).length,
-  };
+  const presents = inscriptions?.filter((i) => i.present === true) ?? [];
 
   return (
-    <AdminLayout title="Attestations" subtitle="Génération et envoi des attestations de participation">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <AdminLayout title="Attestations" subtitle="Participants ayant validé leur présence">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="stat-card text-center py-4">
           <Award className="w-5 h-5 text-accent mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-          <p className="text-xs text-muted-foreground">Total</p>
+          <p className="text-2xl font-bold text-foreground">{presents.length}</p>
+          <p className="text-xs text-muted-foreground">Présences validées</p>
         </div>
         <div className="stat-card text-center py-4">
-          <FileText className="w-5 h-5 text-success mx-auto mb-1" />
-          <p className="text-2xl font-bold text-success">{stats.generees}</p>
-          <p className="text-xs text-muted-foreground">Générées</p>
-        </div>
-        <div className="stat-card text-center py-4">
-          <Send className="w-5 h-5 text-info mx-auto mb-1" />
-          <p className="text-2xl font-bold text-info">{stats.envoyees}</p>
-          <p className="text-xs text-muted-foreground">Envoyées</p>
-        </div>
-        <div className="stat-card text-center py-4">
-          <Clock className="w-5 h-5 text-accent mx-auto mb-1" />
-          <p className="text-2xl font-bold text-accent">{stats.enAttente}</p>
-          <p className="text-xs text-muted-foreground">En attente</p>
+          <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+          <p className="text-2xl font-bold text-foreground">{(inscriptions?.length ?? 0) - presents.length}</p>
+          <p className="text-xs text-muted-foreground">Non validées</p>
         </div>
       </div>
 
-      <div className="flex gap-2 mb-4">
-        <Button className="bg-accent text-accent-foreground hover:bg-accent/90" size="sm">
-          <Award className="w-4 h-4 mr-2" />
-          Générer toutes les attestations
-        </Button>
-        <Button variant="outline" size="sm">
-          <Send className="w-4 h-4 mr-2" />
-          Envoyer toutes les attestations
-        </Button>
-      </div>
-
-      <div className="stat-card overflow-hidden p-0">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Participant</TableHead>
-              <TableHead>Session</TableHead>
-              <TableHead>Thématique</TableHead>
-              <TableHead>Date session</TableHead>
-              <TableHead>Générée</TableHead>
-              <TableHead>Envoyée</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((a) => (
-              <TableRow key={a.id}>
-                <TableCell className="font-medium">{a.participantPrenom} {a.participantNom}</TableCell>
-                <TableCell className="max-w-48 truncate">{a.sessionTitre}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="bg-accent/10 text-accent border-0 text-xs">
-                    {a.thematique}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{a.sessionDate}</TableCell>
-                <TableCell>
-                  {a.generee ? (
-                    <span className="flex items-center gap-1.5 text-success text-sm">
-                      <CheckCircle className="w-3.5 h-3.5" /> {a.dateGeneration}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                      <Clock className="w-3.5 h-3.5" /> En attente
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {a.envoyee ? (
-                    <span className="text-success text-sm flex items-center gap-1.5">
-                      <CheckCircle className="w-3.5 h-3.5" /> Oui
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">Non</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1.5">
-                    {!a.generee && (
-                      <Button size="sm" variant="outline" className="text-xs" onClick={() => handleGenerate(a.id)}>
-                        <FileText className="w-3 h-3 mr-1" /> Générer
-                      </Button>
-                    )}
-                    {a.generee && (
-                      <>
-                        <Button size="sm" variant="outline" className="text-xs">
-                          <Download className="w-3 h-3 mr-1" /> PDF
-                        </Button>
-                        {!a.envoyee && (
-                          <Button size="sm" variant="outline" className="text-xs" onClick={() => handleSend(a.id)}>
-                            <Send className="w-3 h-3 mr-1" /> Envoyer
-                          </Button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </TableCell>
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="stat-card overflow-hidden p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Participant</TableHead>
+                <TableHead>Entreprise</TableHead>
+                <TableHead>Formation</TableHead>
+                <TableHead>Thème</TableHead>
+                <TableHead>Présence</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {inscriptions?.map((i) => (
+                <TableRow key={i.inscription_id}>
+                  <TableCell className="font-medium">{i.nom_dirigeant}</TableCell>
+                  <TableCell>{i.nom_entreprise}</TableCell>
+                  <TableCell className="max-w-48 truncate">{i.formation_titre}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="bg-accent/10 text-accent border-0 text-xs">
+                      {i.theme}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {i.present ? (
+                      <span className="flex items-center gap-1.5 text-success text-sm font-medium">
+                        <CheckCircle className="w-3.5 h-3.5" /> Présent
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                        <Clock className="w-3.5 h-3.5" /> Absent
+                      </span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {(!inscriptions || inscriptions.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    Aucune donnée de présence disponible.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </AdminLayout>
   );
 };
