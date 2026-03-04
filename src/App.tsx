@@ -16,6 +16,7 @@ import Reporting from "./pages/Reporting";
 import Attestations from "./pages/Attestations";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/formations" element={<SessionsPublic />} />
             <Route path="/inscription/:sessionId" element={<InscriptionForm />} />
 
