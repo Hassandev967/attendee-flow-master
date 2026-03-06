@@ -42,7 +42,7 @@ const SessionsPublic = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-green-700">
         <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img src={ciExportLogo} alt="Agence CI Export" className="h-12 object-contain" />
