@@ -204,7 +204,7 @@ const SessionsPublic = () => {
         <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Col 1: Logo + Réseaux sociaux */}
           <div className="space-y-4">
-            <img src={vdeLogo} alt="Agence CI Export" className="h-14 brightness-0 invert" />
+            <img src={ciExportLogo} alt="Agence CI Export" className="h-14 object-contain" />
             <p className="text-sm text-zinc-400">Agence Côte d'Ivoire Export</p>
             <div className="flex gap-3 pt-2">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
