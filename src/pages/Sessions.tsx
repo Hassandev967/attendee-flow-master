@@ -80,7 +80,7 @@ const Sessions = () => {
             return (
               <div
                 key={formation.id}
-                onClick={() => navigate(`/sessions/${formation.id}`)}
+                onClick={() => navigate(`/admin/sessions/${formation.id}`)}
                 className="stat-card cursor-pointer group"
               >
                 <div className="flex items-start justify-between mb-3">
