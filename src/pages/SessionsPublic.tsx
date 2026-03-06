@@ -47,13 +47,13 @@ const SessionsPublic = () => {
           <div className="flex items-center gap-4">
             <img src={ciExportLogo} alt="Agence CI Export" className="h-12 object-contain" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">FORMATION PLATEFORME</h1>
-              <p className="text-muted-foreground text-sm mt-0.5">
+              <h1 className="text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
+              <p className="text-green-100 text-sm mt-0.5">
                 Choisissez une formation puis inscrivez-vous
               </p>
             </div>
           </div>
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/login" className="text-sm text-green-100 hover:text-white transition-colors">
             Espace admin
           </Link>
         </div>
