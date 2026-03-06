@@ -197,6 +197,84 @@ const SessionsPublic = () => {
           </p>
         </DialogContent>
       </Dialog>
+
+      {/* Footer */}
+      <footer className="bg-zinc-900 text-zinc-300 mt-16">
+        <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Col 1: Logo + Réseaux sociaux */}
+          <div className="space-y-4">
+            <img src={vdeLogo} alt="Agence CI Export" className="h-14 brightness-0 invert" />
+            <p className="text-sm text-zinc-400">Agence Côte d'Ivoire Export</p>
+            <div className="flex gap-3 pt-2">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <Facebook className="w-4 h-4 text-white" />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <Instagram className="w-4 h-4 text-white" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <Twitter className="w-4 h-4 text-white" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <Linkedin className="w-4 h-4 text-white" />
+              </a>
+            </div>
+          </div>
+
+          {/* Col 2: Coordonnées */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold text-lg">Coordonnées</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <MapPinned className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
+                <span>Immeuble CGRAE, Adjamé-Indénié, Abidjan</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Phone className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
+                <span>+225 27 20 28 67 53 / +225 07 67 22 99 36</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Mail className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
+                <span>info@cotedivoirexport.ci</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Col 3: Navigation */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold text-lg">Navigation</h3>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:text-orange-400 transition-colors">Accueil</a></li>
+              <li><a href="#" className="hover:text-orange-400 transition-colors">A propos</a></li>
+              <li><a href="#" className="hover:text-orange-400 transition-colors">Atouts de la Côte d'Ivoire</a></li>
+              <li><a href="#" className="hover:text-orange-400 transition-colors">Offres de services</a></li>
+              <li><a href="#" className="hover:text-orange-400 transition-colors">Programmes</a></li>
+              <li><a href="#" className="hover:text-orange-400 transition-colors">Ressources</a></li>
+            </ul>
+          </div>
+
+          {/* Col 4: Newsletter */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold text-lg">Newsletter</h3>
+            <p className="text-sm text-zinc-400">Inscrivez-vous à notre newsletter pour recevoir les dernières actualités.</p>
+            <div className="flex gap-2">
+              <Input placeholder="Votre email" className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" />
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white shrink-0">S'inscrire</Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright bar */}
+        <div className="border-t border-zinc-800">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-2">
+            <span>© Copyright 2025 Agence Côte d'Ivoire Export</span>
+            <div className="flex gap-4">
+              <a href="#" className="hover:text-zinc-300 transition-colors">Politique de confidentialité</a>
+              <a href="#" className="hover:text-zinc-300 transition-colors">Cookies</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
