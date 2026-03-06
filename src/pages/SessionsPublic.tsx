@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, Users, Filter, QrCode, Clock } from "lucide-react";
+import { Calendar, MapPin, Users, Filter, QrCode, Clock, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPinned } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
