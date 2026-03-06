@@ -2,7 +2,21 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, Users, Filter, QrCode, Clock, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPinned } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Filter,
+  QrCode,
+  Clock,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Twitter,
+  Mail,
+  Phone,
+  MapPinned,
+} from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -32,13 +46,9 @@ const SessionsPublic = () => {
     },
   });
 
-  const themes = formations
-    ? [...new Set(formations.map((f) => f.theme))].sort()
-    : [];
+  const themes = formations ? [...new Set(formations.map((f) => f.theme))].sort() : [];
 
-  const filtered = selectedTheme
-    ? formations?.filter((f) => f.theme === selectedTheme)
-    : formations;
+  const filtered = selectedTheme ? formations?.filter((f) => f.theme === selectedTheme) : formations;
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,9 +57,7 @@ const SessionsPublic = () => {
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
-              <p className="text-green-100 text-sm mt-0.5">
-                Choisissez une formation puis inscrivez-vous
-              </p>
+              <p className="text-green-100 text-sm mt-0.5">Choisissez une formation puis inscrivez-vous</p>
             </div>
           </div>
           <Link to="/login" className="text-sm text-green-100 hover:text-white transition-colors">
@@ -140,6 +148,8 @@ const SessionsPublic = () => {
                       )}
                       {formation.lieu && (
                         <span className="flex items-center gap-1.5">
+                          {" "}
+                          Lieu de Formation :
                           <MapPin className="w-3.5 h-3.5" />
                           {formation.lieu}
                         </span>
@@ -164,7 +174,9 @@ const SessionsPublic = () => {
                         <Link to={`/inscription/${formation.id}`}>S'inscrire</Link>
                       </Button>
                     ) : (
-                      <Button disabled variant="secondary">Complet</Button>
+                      <Button disabled variant="secondary">
+                        Complet
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -206,16 +218,36 @@ const SessionsPublic = () => {
             <img src={ciExportLogo} alt="Agence CI Export" className="h-14 object-contain" />
             <p className="text-sm text-zinc-400">Agence Côte d'Ivoire Export</p>
             <div className="flex gap-3 pt-2">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
+              >
                 <Facebook className="w-4 h-4 text-white" />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
+              >
                 <Instagram className="w-4 h-4 text-white" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
+              >
                 <Twitter className="w-4 h-4 text-white" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
+              >
                 <Linkedin className="w-4 h-4 text-white" />
               </a>
             </div>
@@ -244,21 +276,50 @@ const SessionsPublic = () => {
           <div className="space-y-4">
             <h3 className="text-white font-semibold text-lg">Navigation</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-orange-400 transition-colors">Accueil</a></li>
-              <li><a href="#" className="hover:text-orange-400 transition-colors">A propos</a></li>
-              <li><a href="#" className="hover:text-orange-400 transition-colors">Atouts de la Côte d'Ivoire</a></li>
-              <li><a href="#" className="hover:text-orange-400 transition-colors">Offres de services</a></li>
-              <li><a href="#" className="hover:text-orange-400 transition-colors">Programmes</a></li>
-              <li><a href="#" className="hover:text-orange-400 transition-colors">Ressources</a></li>
+              <li>
+                <a href="#" className="hover:text-orange-400 transition-colors">
+                  Accueil
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-orange-400 transition-colors">
+                  A propos
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-orange-400 transition-colors">
+                  Atouts de la Côte d'Ivoire
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-orange-400 transition-colors">
+                  Offres de services
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-orange-400 transition-colors">
+                  Programmes
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-orange-400 transition-colors">
+                  Ressources
+                </a>
+              </li>
             </ul>
           </div>
 
           {/* Col 4: Newsletter */}
           <div className="space-y-4">
             <h3 className="text-white font-semibold text-lg">Newsletter</h3>
-            <p className="text-sm text-zinc-400">Inscrivez-vous à notre newsletter pour recevoir les dernières actualités.</p>
+            <p className="text-sm text-zinc-400">
+              Inscrivez-vous à notre newsletter pour recevoir les dernières actualités.
+            </p>
             <div className="flex gap-2">
-              <Input placeholder="Votre email" className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" />
+              <Input
+                placeholder="Votre email"
+                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+              />
               <Button className="bg-orange-500 hover:bg-orange-600 text-white shrink-0">S'inscrire</Button>
             </div>
           </div>
@@ -269,8 +330,12 @@ const SessionsPublic = () => {
           <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-2">
             <span>© Copyright 2025 Agence Côte d'Ivoire Export</span>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-zinc-300 transition-colors">Politique de confidentialité</a>
-              <a href="#" className="hover:text-zinc-300 transition-colors">Cookies</a>
+              <a href="#" className="hover:text-zinc-300 transition-colors">
+                Politique de confidentialité
+              </a>
+              <a href="#" className="hover:text-zinc-300 transition-colors">
+                Cookies
+              </a>
             </div>
           </div>
         </div>
