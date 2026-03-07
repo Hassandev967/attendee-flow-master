@@ -211,16 +211,16 @@ const InscriptionForm = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-green-700">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
-            <p className="text-green-100 text-sm mt-0.5">Inscription à une formation</p>
+            <h1 className="text-lg sm:text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
+            <p className="text-green-100 text-xs sm:text-sm mt-0.5">Inscription à une formation</p>
           </div>
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-sm text-green-100 hover:text-white transition-colors"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-green-100 hover:text-white transition-colors shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" /> Retour aux formations
+            <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Retour aux formations</span><span className="sm:hidden">Retour</span>
           </button>
         </div>
       </header>

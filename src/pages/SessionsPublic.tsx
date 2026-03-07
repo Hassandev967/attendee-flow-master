@@ -53,14 +53,12 @@ const SessionsPublic = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-green-700">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
-              <p className="text-green-100 text-sm mt-0.5">Choisissez une formation puis inscrivez-vous</p>
-            </div>
+        <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg sm:text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
+            <p className="text-green-100 text-xs sm:text-sm mt-0.5">Choisissez une formation puis inscrivez-vous</p>
           </div>
-          <Link to="/login" className="text-sm text-green-100 hover:text-white transition-colors">
+          <Link to="/login" className="text-xs sm:text-sm text-green-100 hover:text-white transition-colors shrink-0">
             Espace admin
           </Link>
         </div>
