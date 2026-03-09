@@ -123,7 +123,11 @@ const SessionsPublic = () => {
                 <div key={formation.id} className="stat-card flex flex-col md:flex-row md:items-start gap-4 py-6">
                   {formation.image_url && (
                     <div className="shrink-0 w-28 h-28 md:w-36 md:h-36 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
-                      <img src={formation.image_url} alt={formation.titre} className="max-w-full max-h-full object-contain" />
+                      <img
+                        src={formation.image_url}
+                        alt={formation.titre}
+                        className="max-w-full max-h-full object-contain"
+                      />
                     </div>
                   )}
                   <div className="flex-1 space-y-2">
@@ -143,11 +147,13 @@ const SessionsPublic = () => {
                         Thème : <strong className="text-foreground">{formation.theme}</strong>
                       </span>
                       <span className="flex items-center gap-1.5">
+                        Date :
                         <Calendar className="w-3.5 h-3.5" />
                         {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
                       </span>
                       {formation.duree && (
                         <span className="flex items-center gap-1.5">
+                          Heure :
                           <Clock className="w-3.5 h-3.5" />
                           {formation.duree}
                         </span>
@@ -160,6 +166,7 @@ const SessionsPublic = () => {
                         </span>
                       )}
                       <span className="flex items-center gap-1.5">
+                        Participant (e) :
                         <Users className="w-3.5 h-3.5" />
                         {placesRestantes > 0 ? `${placesRestantes} places restantes` : "Complet"}
                       </span>
