@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import ciExportLogo from "@/assets/ci-exports/ci-export-logo.png";
+import ciExportLogo from "@/assets/ci-export-logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
