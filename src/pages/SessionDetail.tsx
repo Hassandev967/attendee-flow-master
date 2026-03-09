@@ -99,18 +99,46 @@ const SessionDetail = () => {
         >
           <ArrowLeft className="w-4 h-4" /> Retour
         </button>
-        <EditSessionDialog formation={{
-          id: formation.id,
-          titre: formation.titre,
-          theme: formation.theme,
-          date_debut: formation.date_debut,
-          duree: formation.duree,
-          lieu: formation.lieu,
-          formateur: formation.formateur,
-          places: formation.places,
-          statut: formation.statut,
-          image_url: (formation as any).image_url,
-        }} />
+        <div className="flex items-center gap-2">
+          {isSuperAdmin && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                  <Trash2 className="w-4 h-4 mr-1" /> Supprimer
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Supprimer cette formation ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    « {formation.titre} » sera définitivement supprimée avec toutes ses inscriptions.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteFormation.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Supprimer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <EditSessionDialog formation={{
+            id: formation.id,
+            titre: formation.titre,
+            theme: formation.theme,
+            date_debut: formation.date_debut,
+            duree: formation.duree,
+            lieu: formation.lieu,
+            formateur: formation.formateur,
+            places: formation.places,
+            statut: formation.statut,
+            image_url: (formation as any).image_url,
+          }} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
