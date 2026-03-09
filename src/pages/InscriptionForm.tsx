@@ -229,24 +229,34 @@ const InscriptionForm = () => {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
         <div className="stat-card mb-6">
           <span className="text-xs font-medium text-accent uppercase tracking-wide">{formation.theme}</span>
-          <h1 className="text-xl font-semibold text-foreground mt-1">{formation.titre}</h1>
-          <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
+          <h1 className="text-2xl font-bold text-foreground mt-2">{formation.titre}</h1>
+          <div className="mt-4 space-y-2 text-lg text-muted-foreground">
+            <p className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-accent" />
+              <span className="font-semibold text-foreground">Date :</span>{" "}
               {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
-            </span>
+            </p>
             {formation.duree && (
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                {formation.duree}
-              </span>
+              <p className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-accent" />
+                <span className="font-semibold text-foreground">Durée :</span> {formation.duree}
+              </p>
             )}
             {formation.lieu && (
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                {formation.lieu}
-              </span>
+              <p className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-accent" />
+                <span className="font-semibold text-foreground">Lieu de Formation :</span> {formation.lieu}
+              </p>
             )}
+            <p className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-accent" />
+              <span className="font-semibold text-foreground">Participants :</span>{" "}
+              {(() => {
+                const inscrits = (formation.inscriptions as any)?.[0]?.count ?? 0;
+                const restantes = formation.places - inscrits;
+                return restantes > 0 ? `${restantes} places restantes` : "Complet";
+              })()}
+            </p>
           </div>
         </div>
 
