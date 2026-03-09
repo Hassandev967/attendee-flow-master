@@ -18,7 +18,14 @@ serve(async (req) => {
     });
   }
 
-  const pool = new Pool(dbUrl, 1);
+  // Build proper connection string if not already a URL
+  let connectionString = dbUrl;
+  if (!dbUrl.startsWith('postgresql://') && !dbUrl.startsWith('postgres://')) {
+    // Assume the secret is just the password, construct the full URL
+    connectionString = `postgresql://agencexp_onufemmes_user:${dbUrl}@91.204.209.25:5432/agencexp_onufemmes`;
+  }
+
+  const pool = new Pool(connectionString, 1);
 
   try {
     const connection = await pool.connect();
@@ -40,7 +47,6 @@ serve(async (req) => {
         ORDER BY t.table_schema, t.table_name, c.ordinal_position
       `);
 
-      // Group by table
       const tables: Record<string, any> = {};
       for (const row of result.rows as any[]) {
         const key = `${row.table_schema}.${row.table_name}`;
