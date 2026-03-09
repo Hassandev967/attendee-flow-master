@@ -51,7 +51,7 @@ const SessionsPublic = () => {
   const filtered = selectedTheme ? formations?.filter((f) => f.theme === selectedTheme) : formations;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-green-700">
         <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between gap-3">
           <div>
@@ -64,7 +64,7 @@ const SessionsPublic = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-8 flex-1">
         {themes.length > 1 && (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
