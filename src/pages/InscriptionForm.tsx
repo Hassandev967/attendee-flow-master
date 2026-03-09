@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Calendar, MapPin, CheckCircle, Loader2, Download, QrCode, Clock, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPinned } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle, Loader2, Download, QrCode, Clock, Users, Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPinned } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
