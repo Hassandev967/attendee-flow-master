@@ -157,14 +157,17 @@ const CreateSessionDialog = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Thème *</Label>
-              <Select value={form.theme} onValueChange={(v) => update("theme", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {themes.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                value={form.theme}
+                onChange={(e) => update("theme", e.target.value)}
+                placeholder="Ex: Export, Logistique, Finance..."
+                list="themes-list"
+              />
+              <datalist id="themes-list">
+                {themes.map((t) => (
+                  <option key={t} value={t} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-2">
               <Label>Statut</Label>
