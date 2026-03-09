@@ -53,7 +53,7 @@ const SessionsPublic = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-green-700">
-        <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-lg sm:text-2xl font-bold text-white">FORMATION PLATEFORME</h1>
             <p className="text-green-100 text-xs sm:text-sm mt-0.5">Choisissez une formation puis inscrivez-vous</p>
@@ -64,7 +64,7 @@ const SessionsPublic = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 flex-1">
+      <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full w-full">
         {themes.length > 1 && (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
