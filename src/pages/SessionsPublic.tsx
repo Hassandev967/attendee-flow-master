@@ -231,6 +231,22 @@ const SessionsPublic = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Image preview dialog */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-2 sm:p-4">
+          <DialogHeader>
+            <DialogTitle className="text-center">{previewImage?.titre}</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <img
+              src={previewImage?.url}
+              alt={previewImage?.titre}
+              className="max-w-full max-h-[75vh] object-contain rounded-lg"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Footer */}
       <footer className="bg-zinc-900 text-zinc-300 mt-16">
         <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
