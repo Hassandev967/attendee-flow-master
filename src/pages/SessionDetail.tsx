@@ -34,6 +34,25 @@ const statusColors: Record<string, string> = {
 const SessionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const isSuperAdmin = user?.email ? SUPERADMIN_EMAILS.includes(user.email) : false;
+
+  const deleteFormation = useMutation({
+    mutationFn: async () => {
+      await supabase.from("inscriptions").delete().eq("formation_id", id!);
+      const { error } = await supabase.from("formations").delete().eq("id", id!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-formations"] });
+      toast({ title: "Formation supprimée" });
+      navigate("/admin/sessions");
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la suppression", variant: "destructive" });
+    },
+  });
 
   const { data: formation, isLoading } = useQuery({
     queryKey: ["formation-detail", id],
