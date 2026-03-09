@@ -83,14 +83,12 @@ const SessionDetail = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Image de la formation */}
           {(formation as any).image_url && (
-            <div className="stat-card p-0 overflow-hidden">
-              <div className="w-full aspect-[16/9]">
-                <img
-                  src={(formation as any).image_url}
-                  alt={formation.titre}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+            <div className="w-36 h-36 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center mb-2">
+              <img
+                src={(formation as any).image_url}
+                alt={formation.titre}
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
           )}
 

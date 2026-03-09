@@ -84,8 +84,8 @@ const Sessions = () => {
                 className="stat-card cursor-pointer group overflow-hidden"
               >
                 {(formation as any).image_url && (
-                  <div className="w-full -mx-5 -mt-5 mb-4 overflow-hidden aspect-[16/9]" style={{ width: 'calc(100% + 2.5rem)' }}>
-                    <img src={(formation as any).image_url} alt={formation.titre} className="w-full h-full object-cover" />
+                  <div className="w-24 h-24 -ml-1 -mt-1 mb-3 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
+                    <img src={(formation as any).image_url} alt={formation.titre} className="max-w-full max-h-full object-contain" />
                   </div>
                 )}
                 <div className="flex items-start justify-between mb-3">
