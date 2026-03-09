@@ -1,13 +1,27 @@
 import AdminLayout from "@/components/AdminLayout";
 import CreateSessionDialog from "@/components/CreateSessionDialog";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Filter, Calendar, MapPin, Users, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Filter, Calendar, MapPin, Users, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 type FormationStatut = "A venir" | "En cours" | "Terminée" | "Annulée" | "all";
 
