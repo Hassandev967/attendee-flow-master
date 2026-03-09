@@ -127,9 +127,42 @@ const Sessions = () => {
                   <span className="text-xs font-medium text-accent uppercase tracking-wide">
                     {formation.theme}
                   </span>
-                  <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-xs`}>
-                    {formation.statut}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {isSuperAdmin && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive hover:text-destructive"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Supprimer cette formation ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              « {formation.titre} » sera définitivement supprimée avec toutes ses inscriptions.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteFormation.mutate(formation.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Supprimer
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                    <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-xs`}>
+                      {formation.statut}
+                    </Badge>
+                  </div>
                 </div>
                 <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2">
                   {formation.titre}
