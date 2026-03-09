@@ -147,7 +147,7 @@ const SessionsPublic = () => {
                         <span className="flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5" />
                           {formation.duree}
-                        </span> </br>
+                        </span>
                       )}
                       {formation.lieu && (
                         <span className="flex items-center gap-1.5">
