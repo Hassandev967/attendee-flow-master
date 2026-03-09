@@ -122,8 +122,8 @@ const SessionsPublic = () => {
               return (
                 <div key={formation.id} className="stat-card flex flex-col md:flex-row md:items-center gap-4">
                   {formation.image_url && (
-                    <div className="shrink-0 w-full md:w-48 aspect-[16/9] md:aspect-[4/3] rounded-lg overflow-hidden">
-                      <img src={formation.image_url} alt={formation.titre} className="w-full h-full object-cover" />
+                    <div className="shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
+                      <img src={formation.image_url} alt={formation.titre} className="max-w-full max-h-full object-contain" />
                     </div>
                   )}
                   <div className="flex-1 space-y-2">
