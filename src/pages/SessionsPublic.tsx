@@ -181,15 +181,22 @@ const SessionsPublic = () => {
                     >
                       <QrCode className="w-4 h-4" />
                     </Button>
-                    {placesRestantes > 0 ? (
-                      <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                        <Link to={`/inscription/${formation.id}`}>S'inscrire</Link>
-                      </Button>
-                    ) : (
-                      <Button disabled variant="secondary">
-                        Complet
-                      </Button>
-                    )}
+                    {(() => {
+                      const deadline = new Date(formation.date_debut);
+                      deadline.setDate(deadline.getDate() - 1);
+                      const isClosed = new Date() >= deadline;
+                      if (isClosed) {
+                        return <Button disabled variant="secondary">Inscriptions fermées</Button>;
+                      }
+                      if (placesRestantes <= 0) {
+                        return <Button disabled variant="secondary">Complet</Button>;
+                      }
+                      return (
+                        <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                          <Link to={`/inscription/${formation.id}`}>S'inscrire</Link>
+                        </Button>
+                      );
+                    })()}
                   </div>
                 </div>
               );

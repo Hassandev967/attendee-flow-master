@@ -174,6 +174,28 @@ const InscriptionForm = () => {
     );
   }
 
+  const deadline = new Date(formation.date_debut);
+  deadline.setDate(deadline.getDate() - 1);
+  const isClosed = new Date() >= deadline;
+
+  if (isClosed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="stat-card max-w-md w-full text-center py-10">
+          <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Inscriptions fermées</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Les inscriptions pour « {formation.titre} » sont closes depuis le{" "}
+            {format(deadline, "d MMMM yyyy", { locale: fr })}.
+          </p>
+          <Button variant="outline" onClick={() => navigate("/")}>
+            Voir les autres formations
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
