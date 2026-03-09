@@ -41,7 +41,7 @@ const SessionsPublic = () => {
         .from("formations")
         .select("*, inscriptions(count)")
         .in("statut", ["A venir", "En cours"])
-        .order("date_debut", { ascending: true });
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
