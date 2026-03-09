@@ -51,6 +51,7 @@ const InscriptionForm = () => {
   const [inscriptionInfo, setInscriptionInfo] = useState<{ nom: string } | null>(null);
   const [formData, setFormData] = useState<Partial<InscriptionData>>({ secteur_ids: [] });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   const { data: formation, isLoading } = useQuery({
     queryKey: ["formation", formationId],
@@ -84,6 +85,19 @@ const InscriptionForm = () => {
     },
   });
 
+  const { data: customFields } = useQuery({
+    queryKey: ["custom-fields-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("custom_fields")
+        .select("*")
+        .eq("active", true)
+        .order("position", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const mutation = useMutation({
     mutationFn: async (data: InscriptionData) => {
       const { error } = await supabase.rpc("inscrire_participant", {
@@ -96,6 +110,22 @@ const InscriptionForm = () => {
         p_secteur_ids: data.secteur_ids,
       });
       if (error) throw error;
+
+      // Save custom field values
+      if (customFields && customFields.length > 0) {
+        const valuesToInsert = customFields
+          .filter((f) => customValues[f.id] !== undefined && customValues[f.id] !== "")
+          .map((f) => ({
+            custom_field_id: f.id,
+            formation_id: formationId!,
+            participant_email: data.email,
+            value: customValues[f.id],
+          }));
+        if (valuesToInsert.length > 0) {
+          const { error: valError } = await supabase.from("custom_field_values").insert(valuesToInsert);
+          if (valError) console.error("Custom field values error:", valError);
+        }
+      }
 
       const qrCode = `${window.location.origin}/inscription/${formationId}`;
       return { qrCode, nom: data.nom_dirigeant };
@@ -135,6 +165,19 @@ const InscriptionForm = () => {
       });
       setErrors(fieldErrors);
       return;
+    }
+    // Validate required custom fields
+    if (customFields) {
+      const customErrors: Record<string, string> = {};
+      for (const f of customFields) {
+        if (f.required && (!customValues[f.id] || customValues[f.id].trim() === "")) {
+          customErrors[`custom_${f.id}`] = "Ce champ est requis";
+        }
+      }
+      if (Object.keys(customErrors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...customErrors }));
+        return;
+      }
     }
     mutation.mutate(result.data);
   };
@@ -389,6 +432,82 @@ const InscriptionForm = () => {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Custom fields */}
+          {customFields && customFields.length > 0 && (
+            <>
+              <hr className="border-border" />
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Informations complémentaires</Label>
+                {customFields.map((field) => (
+                  <div key={field.id} className="space-y-2">
+                    <Label htmlFor={`custom_${field.id}`}>
+                      {field.label} {field.required && "*"}
+                    </Label>
+                    {field.field_type === "text" && (
+                      <Input
+                        id={`custom_${field.id}`}
+                        value={customValues[field.id] || ""}
+                        onChange={(e) => {
+                          setCustomValues((prev) => ({ ...prev, [field.id]: e.target.value }));
+                          setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                        }}
+                        placeholder={field.label}
+                      />
+                    )}
+                    {field.field_type === "number" && (
+                      <Input
+                        id={`custom_${field.id}`}
+                        type="number"
+                        value={customValues[field.id] || ""}
+                        onChange={(e) => {
+                          setCustomValues((prev) => ({ ...prev, [field.id]: e.target.value }));
+                          setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                        }}
+                        placeholder={field.label}
+                      />
+                    )}
+                    {field.field_type === "select" && (
+                      <Select
+                        value={customValues[field.id] || ""}
+                        onValueChange={(v) => {
+                          setCustomValues((prev) => ({ ...prev, [field.id]: v }));
+                          setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.isArray(field.options) && (field.options as string[]).map((opt) => (
+                            <SelectItem key={opt} value={opt}>
+                              {opt}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    {field.field_type === "checkbox" && (
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`custom_${field.id}`}
+                          checked={customValues[field.id] === "true"}
+                          onCheckedChange={(checked) => {
+                            setCustomValues((prev) => ({ ...prev, [field.id]: checked ? "true" : "false" }));
+                            setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                          }}
+                        />
+                        <label htmlFor={`custom_${field.id}`} className="text-sm cursor-pointer">
+                          {field.label}
+                        </label>
+                      </div>
+                    )}
+                    <FieldError field={`custom_${field.id}`} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           <Button
             type="submit"

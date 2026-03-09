@@ -65,6 +65,95 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_field_values: {
+        Row: {
+          created_at: string
+          custom_field_id: string
+          formation_id: string
+          id: string
+          participant_email: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_field_id: string
+          formation_id: string
+          id?: string
+          participant_email: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_field_id?: string
+          formation_id?: string
+          id?: string
+          participant_email?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_values_custom_field_id_fkey"
+            columns: ["custom_field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_values_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "formations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_values_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "v_inscriptions"
+            referencedColumns: ["formation_id"]
+          },
+          {
+            foreignKeyName: "custom_field_values_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "v_taux_remplissage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          active: boolean
+          created_at: string
+          field_type: string
+          id: string
+          label: string
+          options: Json | null
+          position: number
+          required: boolean
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          field_type?: string
+          id?: string
+          label: string
+          options?: Json | null
+          position?: number
+          required?: boolean
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          field_type?: string
+          id?: string
+          label?: string
+          options?: Json | null
+          position?: number
+          required?: boolean
+        }
+        Relationships: []
+      }
       formations: {
         Row: {
           created_at: string

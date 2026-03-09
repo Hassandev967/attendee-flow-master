@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Pencil, Loader2, ImagePlus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import CustomFieldsManager from "@/components/CustomFieldsManager";
 
 interface FormationData {
   id: string;
@@ -213,6 +214,9 @@ const EditSessionDialog = ({ formation }: { formation: FormationData }) => {
             <Label>Nombre de places</Label>
             <Input type="number" min={1} value={form.places} onChange={(e) => update("places", parseInt(e.target.value) || 30)} />
           </div>
+
+          <hr className="border-border" />
+          <CustomFieldsManager />
 
           <Button type="submit" disabled={mutation.isPending} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
