@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import EditSessionDialog from "@/components/EditSessionDialog";
 
 const statusColors: Record<string, string> = {
   "A venir": "bg-info/10 text-info",
@@ -57,15 +58,40 @@ const SessionDetail = () => {
 
   return (
     <AdminLayout title={formation.titre} subtitle={formation.theme}>
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Retour
-      </button>
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Retour
+        </button>
+        <EditSessionDialog formation={{
+          id: formation.id,
+          titre: formation.titre,
+          theme: formation.theme,
+          date_debut: formation.date_debut,
+          duree: formation.duree,
+          lieu: formation.lieu,
+          formateur: formation.formateur,
+          places: formation.places,
+          statut: formation.statut,
+          image_url: (formation as any).image_url,
+        }} />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* Image de la formation */}
+          {(formation as any).image_url && (
+            <div className="stat-card p-0 overflow-hidden">
+              <img
+                src={(formation as any).image_url}
+                alt={formation.titre}
+                className="w-full h-56 object-cover"
+              />
+            </div>
+          )}
+
           <div className="stat-card">
             <div className="flex items-center gap-3 mb-4">
               <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-xs`}>
