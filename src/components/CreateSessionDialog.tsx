@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Loader2, ImagePlus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import CustomFieldsManager from "@/components/CustomFieldsManager";
 
 interface FormationFormData {
   titre: string;
