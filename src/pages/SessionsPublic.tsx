@@ -138,7 +138,7 @@ const SessionsPublic = () => {
                       )}
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">{formation.titre}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
                         {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
