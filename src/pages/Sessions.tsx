@@ -81,8 +81,13 @@ const Sessions = () => {
               <div
                 key={formation.id}
                 onClick={() => navigate(`/admin/sessions/${formation.id}`)}
-                className="stat-card cursor-pointer group"
+                className="stat-card cursor-pointer group overflow-hidden"
               >
+                {(formation as any).image_url && (
+                  <div className="w-full h-32 -mx-5 -mt-5 mb-4 overflow-hidden" style={{ width: 'calc(100% + 2.5rem)' }}>
+                    <img src={(formation as any).image_url} alt={formation.titre} className="w-full h-full object-cover" />
+                  </div>
+                )}
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-xs font-medium text-accent uppercase tracking-wide">
                     {formation.theme}
