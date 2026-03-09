@@ -94,7 +94,21 @@
     @apply border-border;
   }
   body {
+    font-family: Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
     @apply bg-background text-foreground antialiased;
+  }
+  h1 {
+    @apply text-3xl font-bold;
+  }
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+  h3 {
+    @apply text-xl font-semibold;
+  }
+  p, li, span, td, th, label, a {
+    @apply text-base;
   }
 }
 
