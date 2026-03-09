@@ -32,6 +32,7 @@ const BASE_URL = window.location.origin;
 const SessionsPublic = () => {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [qrFormation, setQrFormation] = useState<{ id: string; titre: string } | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ url: string; titre: string } | null>(null);
 
   const { data: formations, isLoading } = useQuery({
     queryKey: ["public-formations"],
