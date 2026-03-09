@@ -120,9 +120,9 @@ const SessionsPublic = () => {
               const placesRestantes = formation.places - inscrits;
 
               return (
-                <div key={formation.id} className="stat-card flex flex-col md:flex-row md:items-center gap-4">
+                <div key={formation.id} className="stat-card flex flex-col md:flex-row md:items-start gap-4 py-6">
                   {formation.image_url && (
-                    <div className="shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
+                    <div className="shrink-0 w-28 h-28 md:w-36 md:h-36 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
                       <img src={formation.image_url} alt={formation.titre} className="max-w-full max-h-full object-contain" />
                     </div>
                   )}
@@ -138,7 +138,10 @@ const SessionsPublic = () => {
                       )}
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">{formation.titre}</h3>
-                    <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                    <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        Thème : <strong className="text-foreground">{formation.theme}</strong>
+                      </span>
                       <span className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
                         {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
@@ -151,7 +154,6 @@ const SessionsPublic = () => {
                       )}
                       {formation.lieu && (
                         <span className="flex items-center gap-1.5">
-                          {" "}
                           Lieu de Formation :
                           <MapPin className="w-3.5 h-3.5" />
                           {formation.lieu}
