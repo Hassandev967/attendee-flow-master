@@ -50,6 +50,10 @@ const Login = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.endsWith("@cotedivoirexport.ci")) {
+      toast({ title: "Email non autorisé", description: "Seules les adresses @cotedivoirexport.ci sont acceptées.", variant: "destructive" });
+      return;
+    }
     if (password.length < 6) {
       toast({ title: "Mot de passe trop court", description: "Minimum 6 caractères.", variant: "destructive" });
       return;
