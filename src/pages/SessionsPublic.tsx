@@ -64,7 +64,7 @@ const SessionsPublic = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-8 flex-1">
         {themes.length > 1 && (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
