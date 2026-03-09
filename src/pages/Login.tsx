@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import ciExportLogo from "@/assets/ci-export-logo.png";
+import ciExportLogo from "@/assets/ci-exports/ci-export-logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const Login = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src={vdeLogo} alt="Logo" className="w-14 h-14 rounded-xl mx-auto mb-4" />
+         ciExportLogo} alt="Agence CI Export" className="w-24 h-24 rounded-xl mx-auto mb-4 object-containx-auto mb-4" />
           <h1 className="text-xl font-semibold text-foreground">FORMATION PLATEFORME</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {forgotMode
