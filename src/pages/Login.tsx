@@ -74,7 +74,7 @@ const Login = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-         ciExportLogo} alt="Agence CI Export" className="w-24 h-24 rounded-xl mx-auto mb-4 object-containx-auto mb-4" />
+         <img src={ciExportLogo} alt="Agence CI Export" className="w-24 h-24 rounded-xl mx-auto mb-4 object-contain" />
           <h1 className="text-xl font-semibold text-foreground">FORMATION PLATEFORME</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {forgotMode
