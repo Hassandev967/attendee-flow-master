@@ -22,7 +22,7 @@ interface FormationFormData {
 
 const defaultForm: FormationFormData = {
   titre: "",
-  theme: "Export",
+  theme: "",
   date_debut: "",
   duree: "",
   lieu: "",
