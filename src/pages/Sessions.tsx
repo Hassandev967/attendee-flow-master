@@ -63,7 +63,6 @@ const Sessions = () => {
 
   const deleteFormation = useMutation({
     mutationFn: async (id: string) => {
-      // Delete related inscriptions first
       await supabase.from("inscriptions").delete().eq("formation_id", id);
       const { error } = await supabase.from("formations").delete().eq("id", id);
       if (error) throw error;
@@ -85,16 +84,16 @@ const Sessions = () => {
 
   return (
     <AdminLayout title="Formations" subtitle="Gérez vos formations">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-1.5 flex-wrap bg-muted/50 p-1 rounded-lg">
           {statusFilters.map((f) => (
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
-              className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all duration-200 ${
                 filter === f.value
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {f.label}
@@ -109,9 +108,10 @@ const Sessions = () => {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
           {filtered.map((formation) => {
             const inscrits = (formation.inscriptions as any)?.[0]?.count ?? 0;
+            const pct = Math.min(100, Math.round((inscrits / formation.places) * 100));
             return (
               <div
                 key={formation.id}
@@ -119,12 +119,12 @@ const Sessions = () => {
                 className="stat-card cursor-pointer group overflow-hidden"
               >
                 {(formation as any).image_url && (
-                  <div className="w-24 h-24 -ml-1 -mt-1 mb-3 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
+                  <div className="w-20 h-20 -ml-1 -mt-1 mb-3 rounded-lg overflow-hidden border border-border/40 bg-muted flex items-center justify-center">
                     <img src={(formation as any).image_url} alt={formation.titre} className="max-w-full max-h-full object-contain" />
                   </div>
                 )}
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-xs font-medium text-accent uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-accent uppercase tracking-widest">
                     {formation.theme}
                   </span>
                   <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ const Sessions = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 text-destructive hover:text-destructive"
+                            className="h-6 w-6 text-destructive/60 hover:text-destructive"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -159,34 +159,34 @@ const Sessions = () => {
                         </AlertDialogContent>
                       </AlertDialog>
                     )}
-                    <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-xs`}>
+                    <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-[10px]`}>
                       {formation.statut}
                     </Badge>
                   </div>
                 </div>
-                <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2">
+                <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2 text-sm">
                   {formation.titre}
                 </h3>
-                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                <div className="mt-4 space-y-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5" />
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
                     {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
                   </div>
                   {formation.lieu && (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5" />
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />
                       {formation.lieu}
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <Users className="w-3.5 h-3.5" />
+                    <Users className="w-3.5 h-3.5 shrink-0" />
                     {inscrits}/{formation.places} inscrits
                   </div>
                 </div>
-                <div className="mt-4 w-full bg-muted rounded-full h-1.5">
+                <div className="mt-4 w-full bg-muted rounded-full h-1">
                   <div
-                    className="bg-accent h-1.5 rounded-full transition-all"
-                    style={{ width: `${Math.min(100, (inscrits / formation.places) * 100)}%` }}
+                    className="bg-accent h-1 rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%` }}
                   />
                 </div>
               </div>
@@ -196,9 +196,11 @@ const Sessions = () => {
       )}
 
       {!isLoading && filtered.length === 0 && (
-        <div className="text-center py-16">
-          <Filter className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-          <p className="text-muted-foreground">Aucune formation trouvée.</p>
+        <div className="text-center py-16 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+            <Filter className="w-7 h-7 text-muted-foreground/40" />
+          </div>
+          <p className="text-muted-foreground text-sm">Aucune formation trouvée.</p>
         </div>
       )}
     </AdminLayout>
