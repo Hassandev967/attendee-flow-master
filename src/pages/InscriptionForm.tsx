@@ -229,7 +229,7 @@ const InscriptionForm = () => {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
         <div className="stat-card mb-6">
           {formation.image_url && (
-            <div className="w-full h-48 md:h-64 rounded-lg overflow-hidden mb-4">
+            <div className="w-full aspect-[16/9] rounded-lg overflow-hidden mb-4">
               <img src={formation.image_url} alt={formation.titre} className="w-full h-full object-cover" />
             </div>
           )}

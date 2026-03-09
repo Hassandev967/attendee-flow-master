@@ -84,11 +84,13 @@ const SessionDetail = () => {
           {/* Image de la formation */}
           {(formation as any).image_url && (
             <div className="stat-card p-0 overflow-hidden">
-              <img
-                src={(formation as any).image_url}
-                alt={formation.titre}
-                className="w-full h-56 object-cover"
-              />
+              <div className="w-full aspect-[16/9]">
+                <img
+                  src={(formation as any).image_url}
+                  alt={formation.titre}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           )}
 
