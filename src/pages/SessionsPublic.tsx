@@ -32,6 +32,7 @@ const BASE_URL = window.location.origin;
 const SessionsPublic = () => {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [qrFormation, setQrFormation] = useState<{ id: string; titre: string } | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ url: string; titre: string } | null>(null);
 
   const { data: formations, isLoading } = useQuery({
     queryKey: ["public-formations"],
@@ -119,13 +120,17 @@ const SessionsPublic = () => {
               return (
                 <div key={formation.id} className="stat-card flex flex-col md:flex-row md:items-start gap-4 py-6">
                   {formation.image_url && (
-                    <div className="shrink-0 w-28 h-28 md:w-36 md:h-36 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewImage({ url: formation.image_url!, titre: formation.titre })}
+                      className="shrink-0 w-28 h-28 md:w-36 md:h-36 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center cursor-zoom-in hover:ring-2 hover:ring-accent transition-shadow"
+                    >
                       <img
                         src={formation.image_url}
                         alt={formation.titre}
                         className="max-w-full max-h-full object-contain"
                       />
-                    </div>
+                    </button>
                   )}
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -223,6 +228,22 @@ const SessionsPublic = () => {
           <p className="text-xs text-muted-foreground mt-2">
             Scannez ce QR code avec votre téléphone pour accéder au formulaire d'inscription
           </p>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image preview dialog */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-2 sm:p-4">
+          <DialogHeader>
+            <DialogTitle className="text-center">{previewImage?.titre}</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <img
+              src={previewImage?.url}
+              alt={previewImage?.titre}
+              className="max-w-full max-h-[75vh] object-contain rounded-lg"
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
