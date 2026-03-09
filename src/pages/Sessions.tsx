@@ -61,6 +61,22 @@ const Sessions = () => {
     },
   });
 
+  const deleteFormation = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete related inscriptions first
+      await supabase.from("inscriptions").delete().eq("formation_id", id);
+      const { error } = await supabase.from("formations").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-formations"] });
+      toast({ title: "Formation supprimée avec succès" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la suppression", variant: "destructive" });
+    },
+  });
+
   const filtered = formations
     ? filter === "all"
       ? formations
