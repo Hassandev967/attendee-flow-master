@@ -100,30 +100,31 @@
   }
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     letter-spacing: -0.01em;
+    line-height: 1.7;
     @apply bg-background text-foreground antialiased;
   }
   h1 {
-    @apply text-2xl sm:text-3xl font-bold tracking-tight;
+    @apply text-3xl sm:text-4xl font-bold tracking-tight leading-tight;
   }
   h2 {
-    @apply text-xl sm:text-2xl font-semibold tracking-tight;
+    @apply text-2xl sm:text-3xl font-semibold tracking-tight leading-snug;
   }
   h3 {
-    @apply text-lg sm:text-xl font-semibold tracking-tight;
+    @apply text-xl sm:text-2xl font-semibold tracking-tight leading-snug;
   }
   p, li, span, td, th, label, a {
-    @apply text-base leading-relaxed;
+    @apply text-[17px] leading-relaxed;
   }
   input, select, textarea {
-    @apply text-base;
+    @apply text-[17px];
   }
   button {
-    @apply text-base;
+    @apply text-[17px];
   }
   table {
-    @apply text-base;
+    @apply text-[17px];
   }
 }
 
