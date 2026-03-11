@@ -54,20 +54,51 @@ const SessionsPublic = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Hero Header */}
-      <header className="relative bg-gradient-to-br from-green-800 via-green-700 to-green-600 overflow-hidden">
+      <header className="relative bg-gradient-to-br from-green-900 via-green-800 to-green-700 overflow-hidden">
+        {/* Decorative elements */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDJ2LTJoMzR6bTAtMzBWMkgydjJoMzR6TTIgMGgzNnYySDJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 relative">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-white" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 relative">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <img src={ciExportLogo} alt="Agence CI Export" className="h-12 sm:h-14 object-contain" />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+                  Nos formations<br />
+                  <span className="text-accent">disponibles</span>
+                </h1>
+                <p className="text-green-100/70 text-base sm:text-lg max-w-xl leading-relaxed">
+                  Découvrez nos programmes de renforcement des capacités et inscrivez-vous en ligne.
+                </p>
+              </div>
+              <div className="flex items-center gap-4 pt-2">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                  <GraduationCap className="w-4 h-4 text-accent" />
+                  <span className="text-white/90 text-sm font-medium">Programmes certifiants</span>
+                </div>
+                <div className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                  <Users className="w-4 h-4 text-accent" />
+                  <span className="text-white/90 text-sm font-medium">Inscription en ligne</span>
+                </div>
+              </div>
+            </div>
+            <div className="hidden md:block shrink-0">
+              <div className="w-44 h-44 lg:w-52 lg:h-52 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center p-6">
+                <img src={vdeLogo} alt="VDE" className="max-w-full max-h-full object-contain opacity-90" />
+              </div>
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Nos formations disponibles
-          </h1>
-          <p className="text-green-100/80 text-sm sm:text-base mt-2 max-w-lg">
-            Découvrez nos programmes de renforcement des capacités et inscrivez-vous en ligne.
-          </p>
+        </div>
+
+        {/* Bottom wave */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+            <path d="M0 60L48 55C96 50 192 40 288 35C384 30 480 30 576 33.3C672 36.7 768 43.3 864 45C960 46.7 1056 43.3 1152 40C1248 36.7 1344 33.3 1392 31.7L1440 30V60H1392C1344 60 1248 60 1152 60C1056 60 960 60 864 60C768 60 672 60 576 60C480 60 384 60 288 60C192 60 96 60 48 60H0Z" fill="hsl(210, 20%, 98%)" />
+          </svg>
         </div>
       </header>
 
