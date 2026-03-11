@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import {
   Loader2, UserPlus, Shield, ShieldCheck, Trash2, History, Clock,
-  User as UserIcon, Eye, BookOpen, Check, X, GraduationCap
+  User as UserIcon, Eye, BookOpen, Check, X, GraduationCap, KeyRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,10 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const SUPERADMIN_EMAILS = ["t.coulibaly@cotedivoirexport.ci", "h.cisse@cotedivoirexport.ci"];
 
@@ -47,8 +51,15 @@ const PERMISSIONS = [
 
 const getRoleConfig = (role: string) => ROLES.find((r) => r.value === role) || ROLES[3];
 
-const logAction = async (action: string, details: string, email: string) => {
-  await supabase.from("audit_log").insert({ action, details, user_email: email });
+const callManageUsers = async (payload: Record<string, any>) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await supabase.functions.invoke("manage-users", {
+    body: payload,
+    headers: { Authorization: `Bearer ${session?.access_token}` },
+  });
+  if (res.error) throw new Error(res.error.message);
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
 };
 
 const UsersManagement = () => {
@@ -56,7 +67,13 @@ const UsersManagement = () => {
   const queryClient = useQueryClient();
   const [newEmail, setNewEmail] = useState("");
   const [newNom, setNewNom] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [newRole, setNewRole] = useState("admin");
+
+  // Reset password dialog
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
 
   const isSuperAdmin = user?.email ? SUPERADMIN_EMAILS.includes(user.email) : false;
 
@@ -90,26 +107,29 @@ const UsersManagement = () => {
     queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
   };
 
-  const addAdmin = useMutation({
+  const createUser = useMutation({
     mutationFn: async () => {
       if (!newEmail.endsWith("@cotedivoirexport.ci")) {
         throw new Error("Seuls les emails @cotedivoirexport.ci sont autorisés");
       }
-      const { error } = await supabase.from("admins").insert({
+      if (!newPassword || newPassword.length < 6) {
+        throw new Error("Le mot de passe doit contenir au moins 6 caractères");
+      }
+      return callManageUsers({
+        action: "create_user",
         email: newEmail,
+        password: newPassword,
         nom_complet: newNom || null,
         role: newRole,
       });
-      if (error) throw error;
-      const roleLabel = getRoleConfig(newRole).label;
-      await logAction("Ajout utilisateur", `${newNom || newEmail} ajouté en tant que ${roleLabel}`, user?.email || "");
     },
     onSuccess: () => {
       invalidateAll();
       setNewEmail("");
       setNewNom("");
+      setNewPassword("");
       setNewRole("admin");
-      toast({ title: "Utilisateur ajouté avec succès" });
+      toast({ title: "Compte créé avec succès", description: "L'utilisateur peut maintenant se connecter." });
     },
     onError: (err: any) => {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
@@ -120,8 +140,6 @@ const UsersManagement = () => {
     mutationFn: async ({ id, role, adminEmail }: { id: string; role: string; adminEmail: string }) => {
       const { error } = await supabase.from("admins").update({ role }).eq("id", id);
       if (error) throw error;
-      const roleLabel = getRoleConfig(role).label;
-      await logAction("Modification rôle", `${adminEmail} → ${roleLabel}`, user?.email || "");
     },
     onSuccess: () => {
       invalidateAll();
@@ -133,11 +151,6 @@ const UsersManagement = () => {
     mutationFn: async ({ id, actif, adminEmail }: { id: string; actif: boolean; adminEmail: string }) => {
       const { error } = await supabase.from("admins").update({ actif }).eq("id", id);
       if (error) throw error;
-      await logAction(
-        actif ? "Activation utilisateur" : "Désactivation utilisateur",
-        `${adminEmail} ${actif ? "activé" : "désactivé"}`,
-        user?.email || ""
-      );
     },
     onSuccess: () => {
       invalidateAll();
@@ -145,15 +158,35 @@ const UsersManagement = () => {
     },
   });
 
-  const deleteAdmin = useMutation({
-    mutationFn: async ({ id, adminEmail }: { id: string; adminEmail: string }) => {
-      const { error } = await supabase.from("admins").delete().eq("id", id);
-      if (error) throw error;
-      await logAction("Suppression utilisateur", `${adminEmail} supprimé`, user?.email || "");
+  const deleteUser = useMutation({
+    mutationFn: async ({ adminEmail }: { id: string; adminEmail: string }) => {
+      return callManageUsers({ action: "delete_user", email: adminEmail });
     },
     onSuccess: () => {
       invalidateAll();
-      toast({ title: "Utilisateur supprimé" });
+      toast({ title: "Compte supprimé avec succès" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const resetPwd = useMutation({
+    mutationFn: async () => {
+      if (!resetPassword || resetPassword.length < 6) {
+        throw new Error("Le mot de passe doit contenir au moins 6 caractères");
+      }
+      return callManageUsers({ action: "reset_password", email: resetEmail, password: resetPassword });
+    },
+    onSuccess: () => {
+      invalidateAll();
+      setResetDialogOpen(false);
+      setResetEmail("");
+      setResetPassword("");
+      toast({ title: "Mot de passe réinitialisé", description: "Le nouveau mot de passe est actif immédiatement." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
     },
   });
 
@@ -170,18 +203,17 @@ const UsersManagement = () => {
 
   const actionColors: Record<string, string> = {
     "Ajout utilisateur": "bg-success/10 text-success",
-    "Ajout admin": "bg-success/10 text-success",
+    "Création de compte": "bg-success/10 text-success",
     "Suppression utilisateur": "bg-destructive/10 text-destructive",
-    "Suppression admin": "bg-destructive/10 text-destructive",
+    "Suppression de compte": "bg-destructive/10 text-destructive",
     "Activation utilisateur": "bg-info/10 text-info",
-    "Activation admin": "bg-info/10 text-info",
     "Désactivation utilisateur": "bg-warning/10 text-warning",
-    "Désactivation admin": "bg-warning/10 text-warning",
     "Modification rôle": "bg-accent/10 text-accent",
+    "Réinitialisation mot de passe": "bg-warning/10 text-warning",
   };
 
   return (
-    <AdminLayout title="Gestion des utilisateurs" subtitle="Gérez les utilisateurs, rôles et permissions de la plateforme">
+    <AdminLayout title="Gestion des utilisateurs" subtitle="Gérez les comptes, rôles et permissions de la plateforme">
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
           <TabsTrigger value="users" className="flex items-center gap-2">
@@ -200,23 +232,27 @@ const UsersManagement = () => {
           <div className="stat-card">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <UserPlus className="w-4 h-4 text-accent" />
-              Ajouter un utilisateur
+              Créer un compte utilisateur
             </h3>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <Input
                 placeholder="Nom complet"
                 value={newNom}
                 onChange={(e) => setNewNom(e.target.value)}
-                className="sm:w-48"
               />
               <Input
                 placeholder="email@cotedivoirexport.ci"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="sm:flex-1"
+              />
+              <Input
+                placeholder="Mot de passe"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
               />
               <Select value={newRole} onValueChange={setNewRole}>
-                <SelectTrigger className="sm:w-44">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -230,10 +266,13 @@ const UsersManagement = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Button onClick={() => addAdmin.mutate()} disabled={!newEmail || addAdmin.isPending}>
-                {addAdmin.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ajouter"}
+              <Button onClick={() => createUser.mutate()} disabled={!newEmail || !newPassword || createUser.isPending}>
+                {createUser.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer le compte"}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Le compte sera créé avec accès immédiat. L'utilisateur pourra se connecter avec l'email et le mot de passe définis.
+            </p>
           </div>
 
           {isLoading ? (
@@ -249,19 +288,20 @@ const UsersManagement = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Rôle</TableHead>
                     <TableHead>Actif</TableHead>
-                    <TableHead className="w-16"></TableHead>
+                    <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {admins?.map((admin) => {
                     const roleConf = getRoleConfig(admin.role);
                     const RoleIcon = roleConf.icon;
+                    const isSelf = admin.email === user?.email;
                     return (
                       <TableRow key={admin.id}>
                         <TableCell className="font-medium">{admin.nom_complet || "—"}</TableCell>
                         <TableCell>{admin.email}</TableCell>
                         <TableCell>
-                          {admin.email === user?.email ? (
+                          {isSelf ? (
                             <Badge variant="secondary" className={`${roleConf.color} border-0`}>
                               <span className="flex items-center gap-1">
                                 <RoleIcon className="w-3 h-3" />
@@ -297,35 +337,53 @@ const UsersManagement = () => {
                             onCheckedChange={(checked) =>
                               toggleActive.mutate({ id: admin.id, actif: checked, adminEmail: admin.email })
                             }
-                            disabled={admin.email === user?.email}
+                            disabled={isSelf}
                           />
                         </TableCell>
                         <TableCell>
-                          {admin.email !== user?.email && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Supprimer cet utilisateur ?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    {admin.email} n'aura plus accès au back-office.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteAdmin.mutate({ id: admin.id, adminEmail: admin.email })}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Supprimer
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                          {!isSelf && (
+                            <div className="flex items-center gap-1">
+                              {/* Reset password */}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-warning hover:text-warning"
+                                onClick={() => {
+                                  setResetEmail(admin.email);
+                                  setResetPassword("");
+                                  setResetDialogOpen(true);
+                                }}
+                                title="Réinitialiser le mot de passe"
+                              >
+                                <KeyRound className="w-4 h-4" />
+                              </Button>
+
+                              {/* Delete */}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Supprimer ce compte ?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Le compte de {admin.email} sera définitivement supprimé (accès et données d'authentification).
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteUser.mutate({ id: admin.id, adminEmail: admin.email })}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Supprimer définitivement
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
@@ -379,7 +437,6 @@ const UsersManagement = () => {
             </div>
           </div>
 
-          {/* Role summary cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {ROLES.map((r) => {
               const count = admins?.filter((a) => a.role === r.value).length || 0;
@@ -444,6 +501,42 @@ const UsersManagement = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-warning" />
+              Réinitialiser le mot de passe
+            </DialogTitle>
+            <DialogDescription>
+              Définir un nouveau mot de passe pour <strong>{resetEmail}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Nouveau mot de passe</Label>
+              <Input
+                type="password"
+                placeholder="Minimum 6 caractères"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetDialogOpen(false)}>Annuler</Button>
+            <Button
+              onClick={() => resetPwd.mutate()}
+              disabled={!resetPassword || resetPassword.length < 6 || resetPwd.isPending}
+            >
+              {resetPwd.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Réinitialiser
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
