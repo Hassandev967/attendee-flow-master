@@ -86,11 +86,6 @@ const SessionsPublic = () => {
                 </div>
               </div>
             </div>
-            <div className="hidden md:block shrink-0">
-              <div className="w-44 h-44 lg:w-52 lg:h-52 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center p-6">
-                <img src={vdeLogo} alt="VDE" className="max-w-full max-h-full object-contain opacity-90" />
-              </div>
-            </div>
           </div>
         </div>
 
