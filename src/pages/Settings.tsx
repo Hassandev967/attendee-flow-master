@@ -186,6 +186,9 @@ const Settings = () => {
           </div>
         </div>
 
+        {/* Changer mon mot de passe */}
+        <ChangePasswordSection />
+
         <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Sauvegarder les paramètres
