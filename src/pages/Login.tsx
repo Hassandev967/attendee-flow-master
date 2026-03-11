@@ -4,9 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogIn, UserPlus, ShieldCheck, ArrowLeft, Lock } from "lucide-react";
+import { Loader2, LogIn, ArrowLeft, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import ciExportLogo from "@/assets/ci-export-logo.png";
 
 const Login = () => {
@@ -14,11 +13,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [forgotMode, setForgotMode] = useState(false);
-  const [otpMode, setOtpMode] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [pendingEmail, setPendingEmail] = useState("");
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,150 +41,11 @@ const Login = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("Email not confirmed")) {
-        toast({ title: "Email non vérifié", description: "Vérifiez votre boîte mail et confirmez votre email.", variant: "destructive" });
-      } else {
-        toast({ title: "Erreur de connexion", description: error.message, variant: "destructive" });
-      }
+      toast({ title: "Erreur de connexion", description: error.message, variant: "destructive" });
     } else {
       navigate("/admin");
     }
   };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.endsWith("@cotedivoirexport.ci")) {
-      toast({ title: "Email non autorisé", description: "Seules les adresses @cotedivoirexport.ci sont acceptées.", variant: "destructive" });
-      return;
-    }
-    if (password.length < 6) {
-      toast({ title: "Mot de passe trop court", description: "Minimum 6 caractères.", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    setLoading(false);
-
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    } else {
-      setPendingEmail(email);
-      setOtpMode(true);
-      toast({
-        title: "Code envoyé !",
-        description: "Un code de vérification a été envoyé à votre adresse email.",
-      });
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpCode.length !== 6) {
-      toast({ title: "Code incomplet", description: "Veuillez saisir les 6 chiffres du code.", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: pendingEmail,
-      token: otpCode,
-      type: "signup",
-    });
-    setLoading(false);
-
-    if (error) {
-      toast({ title: "Code invalide", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Compte vérifié !", description: "Votre email a été confirmé. Bienvenue !" });
-      navigate("/admin");
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: pendingEmail,
-    });
-    setLoading(false);
-
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Code renvoyé", description: "Un nouveau code a été envoyé à votre email." });
-    }
-  };
-
-  // OTP Verification screen
-  if (otpMode) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-sm animate-scale-in">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-8 h-8 text-accent" />
-            </div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">Vérification par email</h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Un code à 6 chiffres a été envoyé à
-            </p>
-            <p className="text-sm font-semibold text-foreground">{pendingEmail}</p>
-          </div>
-
-          <form onSubmit={handleVerifyOtp} className="stat-card space-y-6">
-            <div className="space-y-3">
-              <Label className="text-center block text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Code de vérification
-              </Label>
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading || otpCode.length !== 6}
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
-              Vérifier le code
-            </Button>
-
-            <div className="text-center space-y-2">
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={loading}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Renvoyer le code
-              </button>
-              <br />
-              <button
-                type="button"
-                onClick={() => { setOtpMode(false); setOtpCode(""); setMode("signup"); }}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mx-auto"
-              >
-                <ArrowLeft className="w-3 h-3" /> Retour
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -200,15 +56,11 @@ const Login = () => {
           </div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">FORMATION PLATEFORME</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {forgotMode
-              ? "Réinitialisation du mot de passe"
-              : mode === "login"
-                ? "Connectez-vous au back-office"
-                : "Créez votre compte administrateur"}
+            {forgotMode ? "Réinitialisation du mot de passe" : "Connectez-vous au back-office"}
           </p>
         </div>
 
-        <form onSubmit={forgotMode ? handleForgotPassword : mode === "login" ? handleLogin : handleSignup} className="stat-card space-y-4">
+        <form onSubmit={forgotMode ? handleForgotPassword : handleLogin} className="stat-card space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-xs font-medium">Email</Label>
             <Input
@@ -236,17 +88,11 @@ const Login = () => {
             </div>
           )}
           <Button type="submit" disabled={loading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-10">
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : mode === "login" ? (
-              <LogIn className="w-4 h-4 mr-2" />
-            ) : (
-              <UserPlus className="w-4 h-4 mr-2" />
-            )}
-            {forgotMode ? "Envoyer le lien" : mode === "login" ? "Se connecter" : "Créer le compte"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <LogIn className="w-4 h-4 mr-2" />}
+            {forgotMode ? "Envoyer le lien" : "Se connecter"}
           </Button>
 
-          {mode === "login" && !forgotMode && (
+          {!forgotMode && (
             <button
               type="button"
               onClick={() => setForgotMode(true)}
@@ -256,13 +102,15 @@ const Login = () => {
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => { setForgotMode(false); setMode(mode === "login" ? "signup" : "login"); }}
-            className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {forgotMode ? "Retour à la connexion" : mode === "login" ? "Pas encore de compte ? Créer un compte" : "Déjà un compte ? Se connecter"}
-          </button>
+          {forgotMode && (
+            <button
+              type="button"
+              onClick={() => setForgotMode(false)}
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
+            >
+              <ArrowLeft className="w-3 h-3" /> Retour à la connexion
+            </button>
+          )}
         </form>
 
         <p className="text-center text-[10px] text-muted-foreground/50 mt-6 flex items-center justify-center gap-1">

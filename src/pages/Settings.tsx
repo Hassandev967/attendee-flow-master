@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Save, Building2, Mail, Bell, Shield, Loader2 } from "lucide-react";
+import { Save, Building2, Mail, Bell, Shield, Loader2, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -186,12 +186,65 @@ const Settings = () => {
           </div>
         </div>
 
+        {/* Changer mon mot de passe */}
+        <ChangePasswordSection />
+
         <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Sauvegarder les paramètres
         </Button>
       </div>
     </AdminLayout>
+  );
+};
+
+const ChangePasswordSection = () => {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: "Mot de passe trop court", description: "Minimum 6 caractères.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Erreur", description: "Les mots de passe ne correspondent pas.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Mot de passe modifié", description: "Votre nouveau mot de passe a été enregistré." });
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+  };
+
+  return (
+    <div className="stat-card">
+      <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+        <KeyRound className="w-4 h-4 text-accent" />
+        Changer mon mot de passe
+      </h3>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Nouveau mot de passe</Label>
+          <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <div className="space-y-2">
+          <Label>Confirmer le mot de passe</Label>
+          <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <Button onClick={handleChangePassword} disabled={saving || !newPassword || !confirmPassword} variant="outline">
+          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <KeyRound className="w-4 h-4 mr-2" />}
+          Modifier mon mot de passe
+        </Button>
+      </div>
+    </div>
   );
 };
 
