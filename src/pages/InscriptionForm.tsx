@@ -56,6 +56,10 @@ const InscriptionForm = () => {
   const [formData, setFormData] = useState<Partial<InscriptionData>>({ secteur_ids: [] });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
+  const [autreSecteur, setAutreSecteur] = useState(false);
+  const [autreSecteurTexte, setAutreSecteurTexte] = useState("");
+  const [autreSource, setAutreSource] = useState(false);
+  const [autreSourceTexte, setAutreSourceTexte] = useState("");
 
   const { data: formation, isLoading } = useQuery({
     queryKey: ["formation", formationId],
@@ -459,13 +463,43 @@ const InscriptionForm = () => {
                   {s.nom}
                 </label>
               ))}
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={autreSecteur}
+                  onCheckedChange={(checked) => {
+                    setAutreSecteur(!!checked);
+                    if (!checked) setAutreSecteurTexte("");
+                  }}
+                />
+                Autre
+              </label>
             </div>
+            {autreSecteur && (
+              <Input
+                value={autreSecteurTexte}
+                onChange={(e) => setAutreSecteurTexte(e.target.value)}
+                placeholder="À préciser..."
+                className="mt-2"
+              />
+            )}
             <FieldError field="secteur_ids" />
           </div>
 
           <div className="space-y-2">
             <Label>Comment avez-vous entendu parler de nous ?</Label>
-            <Select value={formData.source_id?.toString()} onValueChange={(v) => updateField("source_id", parseInt(v))}>
+            <Select
+              value={autreSource ? "autre" : (formData.source_id?.toString() || "")}
+              onValueChange={(v) => {
+                if (v === "autre") {
+                  setAutreSource(true);
+                  updateField("source_id", undefined);
+                } else {
+                  setAutreSource(false);
+                  setAutreSourceTexte("");
+                  updateField("source_id", parseInt(v));
+                }
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner (optionnel)" />
               </SelectTrigger>
@@ -475,8 +509,17 @@ const InscriptionForm = () => {
                     {s.nom}
                   </SelectItem>
                 ))}
+                <SelectItem value="autre">Autre</SelectItem>
               </SelectContent>
             </Select>
+            {autreSource && (
+              <Input
+                value={autreSourceTexte}
+                onChange={(e) => setAutreSourceTexte(e.target.value)}
+                placeholder="À préciser..."
+                className="mt-2"
+              />
+            )}
           </div>
 
           {/* Custom fields */}
