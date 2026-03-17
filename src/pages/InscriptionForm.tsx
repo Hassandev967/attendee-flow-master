@@ -124,12 +124,17 @@ const InscriptionForm = () => {
       if (customFields && customFields.length > 0) {
         const valuesToInsert = customFields
           .filter((f) => customValues[f.id] !== undefined && customValues[f.id] !== "")
-          .map((f) => ({
-            custom_field_id: f.id,
-            formation_id: formationId!,
-            participant_email: data.email,
-            value: customValues[f.id],
-          }));
+          .map((f) => {
+            let val = customValues[f.id];
+            const preciser = customValues[`${f.id}_preciser`];
+            if (preciser) val = `${val} : ${preciser}`;
+            return {
+              custom_field_id: f.id,
+              formation_id: formationId!,
+              participant_email: data.email,
+              value: val,
+            };
+          });
         if (valuesToInsert.length > 0) {
           const { error: valError } = await supabase.from("custom_field_values").insert(valuesToInsert);
           if (valError) console.error("Custom field values error:", valError);
@@ -557,24 +562,33 @@ const InscriptionForm = () => {
                       />
                     )}
                     {field.field_type === "select" && (
-                      <Select
-                        value={customValues[field.id] || ""}
-                        onValueChange={(v) => {
-                          setCustomValues((prev) => ({ ...prev, [field.id]: v }));
-                          setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.isArray(field.options) && (field.options as string[]).map((opt) => (
-                            <SelectItem key={opt} value={opt}>
-                              {opt}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <>
+                        <Select
+                          value={customValues[field.id] || ""}
+                          onValueChange={(v) => {
+                            setCustomValues((prev) => ({ ...prev, [field.id]: v, [`${field.id}_preciser`]: "" }));
+                            setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.isArray(field.options) && (field.options as string[]).map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {customValues[field.id] && /pr[ée]ciser/i.test(customValues[field.id]) && (
+                          <Input
+                            value={customValues[`${field.id}_preciser`] || ""}
+                            onChange={(e) => setCustomValues((prev) => ({ ...prev, [`${field.id}_preciser`]: e.target.value }))}
+                            placeholder="À préciser..."
+                          />
+                        )}
+                      </>
                     )}
                     {field.field_type === "checkbox" && (
                       <div className="flex items-center gap-2">
