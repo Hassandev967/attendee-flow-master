@@ -421,9 +421,10 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="nom_entreprise">Raison sociale *</Label>
+              <Label htmlFor="nom_entreprise" className="text-base font-semibold">Raison sociale *</Label>
               <Input
                 id="nom_entreprise"
+                className="h-12 text-base"
                 value={formData.nom_entreprise || ""}
                 onChange={(e) => updateField("nom_entreprise", e.target.value)}
                 placeholder="Nom de l'entreprise"
@@ -434,10 +435,11 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-base font-semibold">Email *</Label>
               <Input
                 id="email"
                 type="email"
+                className="h-12 text-base"
                 value={formData.email || ""}
                 onChange={(e) => updateField("email", e.target.value)}
                 placeholder="email@exemple.com"
@@ -445,10 +447,11 @@ const InscriptionForm = () => {
               <FieldError field="email" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="telephone">Téléphone *</Label>
+              <Label htmlFor="telephone" className="text-base font-semibold">Téléphone *</Label>
               <Input
                 id="telephone"
                 type="tel"
+                className="h-12 text-base"
                 value={formData.telephone || ""}
                 onChange={(e) => updateField("telephone", e.target.value)}
                 placeholder="+225 07 12 34 56 78"
