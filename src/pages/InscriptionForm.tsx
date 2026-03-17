@@ -335,7 +335,8 @@ const InscriptionForm = () => {
           <div className="mt-4 space-y-2 text-lg text-muted-foreground">
             <p className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-accent" />
-              <span className="font-bold text-foreground">Thème :</span> <span className="font-bold">{formation.theme}</span>
+              <span className="font-bold text-foreground">Thème :</span>{" "}
+              <span className="font-bold">{formation.theme}</span>
             </p>
             <p className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-accent" />
@@ -371,7 +372,9 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="civilite" className="text-base font-semibold">Civilité *</Label>
+              <Label htmlFor="civilite" className="text-base font-semibold">
+                Civilité *
+              </Label>
               <Select value={formData.civilite || ""} onValueChange={(v) => updateField("civilite", v)}>
                 <SelectTrigger id="civilite" className="h-12 text-base">
                   <SelectValue placeholder="Sélectionner" />
@@ -385,7 +388,9 @@ const InscriptionForm = () => {
               <FieldError field="civilite" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nom" className="text-base font-semibold">Nom *</Label>
+              <Label htmlFor="nom" className="text-base font-semibold">
+                Nom *
+              </Label>
               <Input
                 id="nom"
                 className="h-12 text-base"
@@ -396,7 +401,9 @@ const InscriptionForm = () => {
               <FieldError field="nom" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prenoms" className="text-base font-semibold">Prénom(s) *</Label>
+              <Label htmlFor="prenoms" className="text-base font-semibold">
+                Prénom(s) *
+              </Label>
               <Input
                 id="prenoms"
                 className="h-12 text-base"
@@ -407,7 +414,9 @@ const InscriptionForm = () => {
               <FieldError field="prenoms" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fonction" className="text-base font-semibold">Fonction / Poste *</Label>
+              <Label htmlFor="fonction" className="text-base font-semibold">
+                Fonction / Poste *
+              </Label>
               <Input
                 id="fonction"
                 className="h-12 text-base"
@@ -421,7 +430,9 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="nom_entreprise" className="text-base font-semibold">Raison sociale *</Label>
+              <Label htmlFor="nom_entreprise" className="text-base font-semibold">
+                Raison sociale *
+              </Label>
               <Input
                 id="nom_entreprise"
                 className="h-12 text-base"
@@ -435,7 +446,9 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-base font-semibold">Email *</Label>
+              <Label htmlFor="email" className="text-base font-semibold">
+                Email *
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -447,7 +460,9 @@ const InscriptionForm = () => {
               <FieldError field="email" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="telephone" className="text-base font-semibold">Téléphone *</Label>
+              <Label htmlFor="telephone" className="text-base font-semibold">
+                Téléphone *
+              </Label>
               <Input
                 id="telephone"
                 type="tel"
@@ -499,7 +514,7 @@ const InscriptionForm = () => {
           <div className="space-y-2">
             <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ?</Label>
             <Select
-              value={autreSource ? "autre" : (formData.source_id?.toString() || "")}
+              value={autreSource ? "autre" : formData.source_id?.toString() || ""}
               onValueChange={(v) => {
                 if (v === "autre") {
                   setAutreSource(true);
@@ -580,17 +595,20 @@ const InscriptionForm = () => {
                             <SelectValue placeholder="Sélectionner" />
                           </SelectTrigger>
                           <SelectContent>
-                            {Array.isArray(field.options) && (field.options as string[]).map((opt) => (
-                              <SelectItem key={opt} value={opt}>
-                                {opt}
-                              </SelectItem>
-                            ))}
+                            {Array.isArray(field.options) &&
+                              (field.options as string[]).map((opt) => (
+                                <SelectItem key={opt} value={opt}>
+                                  {opt}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                         {customValues[field.id] && /pr[ée]ciser/i.test(customValues[field.id]) && (
                           <Input
                             value={customValues[`${field.id}_preciser`] || ""}
-                            onChange={(e) => setCustomValues((prev) => ({ ...prev, [`${field.id}_preciser`]: e.target.value }))}
+                            onChange={(e) =>
+                              setCustomValues((prev) => ({ ...prev, [`${field.id}_preciser`]: e.target.value }))
+                            }
                             placeholder="À préciser..."
                           />
                         )}
@@ -701,17 +719,20 @@ const InscriptionFooter = () => (
             </a>
           </li>
           <li>
-            <a href="#" className="hover:text-orange-400 transition-colors">
+            <a href="https://cotedivoirexport.ci/a-propos/" className="hover:text-orange-400 transition-colors">
               A propos
             </a>
           </li>
           <li>
-            <a href="#" className="hover:text-orange-400 transition-colors">
+            <a
+              href="https://cotedivoirexport.ci/offres-de-services/"
+              className="hover:text-orange-400 transition-colors"
+            >
               Offres de services
             </a>
           </li>
           <li>
-            <a href="#" className="hover:text-orange-400 transition-colors">
+            <a href="https://cotedivoirexport.ci/programmes/" className="hover:text-orange-400 transition-colors">
               Programmes
             </a>
           </li>
