@@ -366,14 +366,14 @@ const InscriptionForm = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="stat-card space-y-6">
-          <h2 className="text-lg font-semibold text-foreground">Formulaire d'inscription</h2>
+        <form onSubmit={handleSubmit} className="stat-card space-y-8 p-8">
+          <h2 className="text-2xl font-bold text-foreground">Formulaire d'inscription</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="civilite">Civilité *</Label>
+              <Label htmlFor="civilite" className="text-base font-semibold">Civilité *</Label>
               <Select value={formData.civilite || ""} onValueChange={(v) => updateField("civilite", v)}>
-                <SelectTrigger id="civilite">
+                <SelectTrigger id="civilite" className="h-12 text-base">
                   <SelectValue placeholder="Sélectionner" />
                 </SelectTrigger>
                 <SelectContent>
@@ -385,9 +385,10 @@ const InscriptionForm = () => {
               <FieldError field="civilite" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nom">Nom *</Label>
+              <Label htmlFor="nom" className="text-base font-semibold">Nom *</Label>
               <Input
                 id="nom"
+                className="h-12 text-base"
                 value={formData.nom || ""}
                 onChange={(e) => updateField("nom", e.target.value)}
                 placeholder="Nom de famille"
@@ -395,9 +396,10 @@ const InscriptionForm = () => {
               <FieldError field="nom" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prenoms">Prénom(s) *</Label>
+              <Label htmlFor="prenoms" className="text-base font-semibold">Prénom(s) *</Label>
               <Input
                 id="prenoms"
+                className="h-12 text-base"
                 value={formData.prenoms || ""}
                 onChange={(e) => updateField("prenoms", e.target.value)}
                 placeholder="Prénom(s)"
@@ -405,9 +407,10 @@ const InscriptionForm = () => {
               <FieldError field="prenoms" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fonction">Fonction / Poste *</Label>
+              <Label htmlFor="fonction" className="text-base font-semibold">Fonction / Poste *</Label>
               <Input
                 id="fonction"
+                className="h-12 text-base"
                 value={formData.fonction || ""}
                 onChange={(e) => updateField("fonction", e.target.value)}
                 placeholder="Ex: Directeur commercial"
@@ -416,11 +419,12 @@ const InscriptionForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="nom_entreprise">Raison sociale *</Label>
+              <Label htmlFor="nom_entreprise" className="text-base font-semibold">Raison sociale *</Label>
               <Input
                 id="nom_entreprise"
+                className="h-12 text-base"
                 value={formData.nom_entreprise || ""}
                 onChange={(e) => updateField("nom_entreprise", e.target.value)}
                 placeholder="Nom de l'entreprise"
@@ -429,12 +433,13 @@ const InscriptionForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-base font-semibold">Email *</Label>
               <Input
                 id="email"
                 type="email"
+                className="h-12 text-base"
                 value={formData.email || ""}
                 onChange={(e) => updateField("email", e.target.value)}
                 placeholder="email@exemple.com"
@@ -442,10 +447,11 @@ const InscriptionForm = () => {
               <FieldError field="email" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="telephone">Téléphone *</Label>
+              <Label htmlFor="telephone" className="text-base font-semibold">Téléphone *</Label>
               <Input
                 id="telephone"
                 type="tel"
+                className="h-12 text-base"
                 value={formData.telephone || ""}
                 onChange={(e) => updateField("telephone", e.target.value)}
                 placeholder="+225 07 12 34 56 78"
@@ -456,11 +462,11 @@ const InscriptionForm = () => {
 
           <hr className="border-border" />
 
-          <div className="space-y-3">
-            <Label>Secteur(s) d'activité(s) *</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Secteur(s) d'activité(s) *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {secteurs?.map((s) => (
-                <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                <label key={s.id} className="flex items-center gap-2 text-base cursor-pointer">
                   <Checkbox
                     checked={(formData.secteur_ids || []).includes(s.id)}
                     onCheckedChange={() => toggleSecteur(s.id)}
@@ -468,7 +474,7 @@ const InscriptionForm = () => {
                   {s.nom}
                 </label>
               ))}
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <label className="flex items-center gap-2 text-base cursor-pointer">
                 <Checkbox
                   checked={autreSecteur}
                   onCheckedChange={(checked) => {
@@ -491,7 +497,7 @@ const InscriptionForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label>Comment avez-vous entendu parler de nous ?</Label>
+            <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ?</Label>
             <Select
               value={autreSource ? "autre" : (formData.source_id?.toString() || "")}
               onValueChange={(v) => {
@@ -505,7 +511,7 @@ const InscriptionForm = () => {
                 }
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-12 text-base">
                 <SelectValue placeholder="Sélectionner (optionnel)" />
               </SelectTrigger>
               <SelectContent>
@@ -522,7 +528,7 @@ const InscriptionForm = () => {
                 value={autreSourceTexte}
                 onChange={(e) => setAutreSourceTexte(e.target.value)}
                 placeholder="À préciser..."
-                className="mt-2"
+                className="mt-2 h-12 text-base"
               />
             )}
           </div>
