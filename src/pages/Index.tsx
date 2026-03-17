@@ -1,11 +1,20 @@
 import AdminLayout from "@/components/AdminLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Users, CheckCircle, Award, Loader2, TrendingUp, Clock, MapPin, ArrowUpRight } from "lucide-react";
+import { Calendar, Users, Loader2, TrendingUp, Clock, MapPin, ArrowUpRight, Building2, Globe, BarChart3, PieChart } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+
+const COLORS = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(var(--accent))",
+];
 
 const Dashboard = () => {
   const { data: stats, isLoading } = useQuery({
@@ -44,38 +53,74 @@ const Dashboard = () => {
     },
   });
 
+  const { data: secteurStats } = useQuery({
+    queryKey: ["dashboard-secteurs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("participant_secteurs")
+        .select("secteur_id, secteurs(nom)");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data?.forEach((ps: any) => {
+        const nom = ps.secteurs?.nom ?? "Inconnu";
+        counts[nom] = (counts[nom] || 0) + 1;
+      });
+      return Object.entries(counts)
+        .map(([nom, total]) => ({ nom, total }))
+        .sort((a, b) => b.total - a.total);
+    },
+  });
+
+  const { data: sourceStats } = useQuery({
+    queryKey: ["dashboard-sources"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("participants")
+        .select("source_id, sources_information(nom)");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data?.forEach((p: any) => {
+        const nom = p.sources_information?.nom ?? "Non renseigné";
+        counts[nom] = (counts[nom] || 0) + 1;
+      });
+      return Object.entries(counts)
+        .map(([nom, total]) => ({ nom, total }))
+        .sort((a, b) => b.total - a.total);
+    },
+  });
+
+  const { data: topEntreprises } = useQuery({
+    queryKey: ["dashboard-top-entreprises"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_inscriptions")
+        .select("nom_entreprise");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data?.forEach((i) => {
+        const nom = i.nom_entreprise ?? "Inconnu";
+        counts[nom] = (counts[nom] || 0) + 1;
+      });
+      return Object.entries(counts)
+        .map(([nom, total]) => ({ nom, total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
+    },
+  });
+
   const tauxPresence = stats?.total_inscrits
     ? Math.round(((stats.total_presents ?? 0) / stats.total_inscrits) * 100)
     : 0;
 
   const statItems = [
-    {
-      label: "Total formations",
-      value: stats?.total_formations ?? 0,
-      icon: Calendar,
-      color: "bg-accent/10 text-accent",
-    },
-    {
-      label: "À venir",
-      value: stats?.formations_a_venir ?? 0,
-      icon: Clock,
-      color: "bg-info/10 text-info",
-      sub: "Planifiées",
-    },
-    {
-      label: "Inscrits confirmés",
-      value: stats?.total_inscrits ?? 0,
-      icon: Users,
-      color: "bg-success/10 text-success",
-    },
-    {
-      label: "Taux de présence",
-      value: `${tauxPresence}%`,
-      icon: TrendingUp,
-      color: "bg-warning/10 text-warning",
-      progress: tauxPresence,
-    },
+    { label: "Total formations", value: stats?.total_formations ?? 0, icon: Calendar, color: "bg-accent/10 text-accent" },
+    { label: "À venir", value: stats?.formations_a_venir ?? 0, icon: Clock, color: "bg-info/10 text-info", sub: "Planifiées" },
+    { label: "Inscrits confirmés", value: stats?.total_inscrits ?? 0, icon: Users, color: "bg-success/10 text-success" },
+    { label: "Taux de présence", value: `${tauxPresence}%`, icon: TrendingUp, color: "bg-warning/10 text-warning", progress: tauxPresence },
   ];
+
+  const totalSecteurs = secteurStats?.reduce((s, i) => s + i.total, 0) ?? 1;
+  const totalSources = sourceStats?.reduce((s, i) => s + i.total, 0) ?? 1;
 
   return (
     <AdminLayout title="Tableau de bord" subtitle="Vue d'ensemble de l'activité">
@@ -102,6 +147,75 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Charts row: Secteurs + Sources */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Secteurs d'activité */}
+            <div className="stat-card">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <PieChart className="w-4 h-4 text-accent" />
+                </div>
+                <h2 className="text-sm font-semibold text-foreground">Répartition par secteur d'activité</h2>
+              </div>
+              {secteurStats && secteurStats.length > 0 ? (
+                <div className="space-y-3">
+                  {secteurStats.map((s, i) => {
+                    const pct = Math.round((s.total / totalSecteurs) * 100);
+                    return (
+                      <div key={s.nom}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-foreground">{s.nom}</span>
+                          <span className="text-xs text-muted-foreground">{s.total} ({pct}%)</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Aucune donnée</p>
+              )}
+            </div>
+
+            {/* Sources d'information */}
+            <div className="stat-card">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                  <Globe className="w-4 h-4 text-info" />
+                </div>
+                <h2 className="text-sm font-semibold text-foreground">Sources d'information</h2>
+              </div>
+              {sourceStats && sourceStats.length > 0 ? (
+                <div className="space-y-3">
+                  {sourceStats.map((s, i) => {
+                    const pct = Math.round((s.total / totalSources) * 100);
+                    return (
+                      <div key={s.nom}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-foreground">{s.nom}</span>
+                          <span className="text-xs text-muted-foreground">{s.total} ({pct}%)</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: COLORS[(i + 2) % COLORS.length] }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Aucune donnée</p>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -162,35 +276,62 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Recent inscriptions */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-semibold text-foreground">Dernières inscriptions</h2>
-                <a href="/admin/participants" className="text-xs text-accent hover:underline font-medium flex items-center gap-1">
-                  Voir tout <ArrowUpRight className="w-3 h-3" />
-                </a>
-              </div>
-              <div className="stat-card divide-y divide-border/50 p-0">
-                {recentInscriptions && recentInscriptions.length > 0 ? (
-                  recentInscriptions.map((ins, i) => (
-                    <div key={i} className="px-5 py-3.5 first:pt-4 last:pb-4 hover:bg-muted/30 transition-colors">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{ins.nom_dirigeant}</p>
-                          <p className="text-xs text-muted-foreground truncate">{ins.nom_entreprise}</p>
+            {/* Right column: Recent inscriptions + Top entreprises */}
+            <div className="space-y-6">
+              {/* Recent inscriptions */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-base font-semibold text-foreground">Dernières inscriptions</h2>
+                  <a href="/admin/participants" className="text-xs text-accent hover:underline font-medium flex items-center gap-1">
+                    Voir tout <ArrowUpRight className="w-3 h-3" />
+                  </a>
+                </div>
+                <div className="stat-card divide-y divide-border/50 p-0">
+                  {recentInscriptions && recentInscriptions.length > 0 ? (
+                    recentInscriptions.map((ins, i) => (
+                      <div key={i} className="px-5 py-3.5 first:pt-4 last:pb-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground text-sm truncate">{ins.nom_dirigeant}</p>
+                            <p className="text-xs text-muted-foreground truncate">{ins.nom_entreprise}</p>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap bg-muted px-1.5 py-0.5 rounded">
+                            {ins.date_inscription ? format(new Date(ins.date_inscription), "dd/MM", { locale: fr }) : ""}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap bg-muted px-1.5 py-0.5 rounded">
-                          {ins.date_inscription ? format(new Date(ins.date_inscription), "dd/MM", { locale: fr }) : ""}
-                        </span>
+                        <p className="text-xs text-accent truncate mt-1">{ins.formation_titre}</p>
                       </div>
-                      <p className="text-xs text-accent truncate mt-1">{ins.formation_titre}</p>
+                    ))
+                  ) : (
+                    <div className="px-5 py-8 text-center">
+                      <p className="text-sm text-muted-foreground">Aucune inscription récente.</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="px-5 py-8 text-center">
-                    <p className="text-sm text-muted-foreground">Aucune inscription récente.</p>
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
+
+              {/* Top entreprises */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="text-base font-semibold text-foreground">Top entreprises</h2>
+                </div>
+                <div className="stat-card p-0">
+                  {topEntreprises && topEntreprises.length > 0 ? (
+                    topEntreprises.map((e, i) => (
+                      <div key={e.nom} className="px-5 py-3 flex items-center gap-3 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
+                        <span className="w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center shrink-0">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm font-medium text-foreground truncate flex-1">{e.nom}</span>
+                        <Badge variant="secondary" className="text-[10px]">{e.total} inscription{e.total > 1 ? "s" : ""}</Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-5 py-6 text-center">
+                      <p className="text-sm text-muted-foreground">Aucune donnée</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
