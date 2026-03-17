@@ -371,9 +371,9 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="civilite">Civilité *</Label>
+              <Label htmlFor="civilite" className="text-base font-semibold">Civilité *</Label>
               <Select value={formData.civilite || ""} onValueChange={(v) => updateField("civilite", v)}>
-                <SelectTrigger id="civilite">
+                <SelectTrigger id="civilite" className="h-12 text-base">
                   <SelectValue placeholder="Sélectionner" />
                 </SelectTrigger>
                 <SelectContent>
@@ -385,9 +385,10 @@ const InscriptionForm = () => {
               <FieldError field="civilite" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nom">Nom *</Label>
+              <Label htmlFor="nom" className="text-base font-semibold">Nom *</Label>
               <Input
                 id="nom"
+                className="h-12 text-base"
                 value={formData.nom || ""}
                 onChange={(e) => updateField("nom", e.target.value)}
                 placeholder="Nom de famille"
@@ -395,9 +396,10 @@ const InscriptionForm = () => {
               <FieldError field="nom" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prenoms">Prénom(s) *</Label>
+              <Label htmlFor="prenoms" className="text-base font-semibold">Prénom(s) *</Label>
               <Input
                 id="prenoms"
+                className="h-12 text-base"
                 value={formData.prenoms || ""}
                 onChange={(e) => updateField("prenoms", e.target.value)}
                 placeholder="Prénom(s)"
@@ -405,9 +407,10 @@ const InscriptionForm = () => {
               <FieldError field="prenoms" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fonction">Fonction / Poste *</Label>
+              <Label htmlFor="fonction" className="text-base font-semibold">Fonction / Poste *</Label>
               <Input
                 id="fonction"
+                className="h-12 text-base"
                 value={formData.fonction || ""}
                 onChange={(e) => updateField("fonction", e.target.value)}
                 placeholder="Ex: Directeur commercial"
