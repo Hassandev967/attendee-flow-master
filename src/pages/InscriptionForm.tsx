@@ -34,8 +34,11 @@ import { QRCodeSVG } from "qrcode.react";
 import ciExportLogo from "@/assets/ci-export-logo-blanc.png";
 
 const inscriptionSchema = z.object({
+  civilite: z.string().trim().min(1, "Requis"),
+  nom: z.string().trim().min(1, "Requis").max(255),
+  prenoms: z.string().trim().min(1, "Requis").max(255),
+  fonction: z.string().trim().min(1, "Requis").max(255),
   nom_entreprise: z.string().trim().min(1, "Requis").max(255),
-  nom_dirigeant: z.string().trim().min(1, "Requis").max(255),
   email: z.string().trim().email("Email invalide").max(255),
   telephone: z.string().trim().min(1, "Requis").max(30),
   source_id: z.number().optional(),
