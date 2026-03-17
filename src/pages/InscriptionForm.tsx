@@ -360,17 +360,54 @@ const InscriptionForm = () => {
         <form onSubmit={handleSubmit} className="stat-card space-y-6">
           <h2 className="text-lg font-semibold text-foreground">Formulaire d'inscription</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="nom_dirigeant">Nom du dirigeant *</Label>
-              <Input
-                id="nom_dirigeant"
-                value={formData.nom_dirigeant || ""}
-                onChange={(e) => updateField("nom_dirigeant", e.target.value)}
-                placeholder="Nom complet"
-              />
-              <FieldError field="nom_dirigeant" />
+              <Label htmlFor="civilite">Civilité *</Label>
+              <Select value={formData.civilite || ""} onValueChange={(v) => updateField("civilite", v)}>
+                <SelectTrigger id="civilite">
+                  <SelectValue placeholder="Sélectionner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Monsieur">Monsieur</SelectItem>
+                  <SelectItem value="Madame">Madame</SelectItem>
+                  <SelectItem value="Mademoiselle">Mademoiselle</SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldError field="civilite" />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="nom">Nom *</Label>
+              <Input
+                id="nom"
+                value={formData.nom || ""}
+                onChange={(e) => updateField("nom", e.target.value)}
+                placeholder="Nom de famille"
+              />
+              <FieldError field="nom" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prenoms">Prénom(s) *</Label>
+              <Input
+                id="prenoms"
+                value={formData.prenoms || ""}
+                onChange={(e) => updateField("prenoms", e.target.value)}
+                placeholder="Prénom(s)"
+              />
+              <FieldError field="prenoms" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fonction">Fonction / Poste *</Label>
+              <Input
+                id="fonction"
+                value={formData.fonction || ""}
+                onChange={(e) => updateField("fonction", e.target.value)}
+                placeholder="Ex: Directeur commercial"
+              />
+              <FieldError field="fonction" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nom_entreprise">Raison sociale *</Label>
               <Input
