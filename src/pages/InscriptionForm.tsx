@@ -463,7 +463,7 @@ const InscriptionForm = () => {
           <hr className="border-border" />
 
           <div className="space-y-4">
-            <Label className="text-base font-semibold">Secteur(s) d'activité(s) *</Label>
+            <Label className="text-base font-semibold">Secteur d'activité *</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {secteurs?.map((s) => (
                 <label key={s.id} className="flex items-center gap-2 text-base cursor-pointer">
