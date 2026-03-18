@@ -1,18 +1,24 @@
 import AdminLayout from "@/components/AdminLayout";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, ChevronDown, ChevronRight, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Loader2, ChevronDown, ChevronRight, Users, Trash2, Download } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 const Participants = () => {
   const [search, setSearch] = useState("");
   const [openFormations, setOpenFormations] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: inscriptions, isLoading } = useQuery({
     queryKey: ["admin-participants-by-formation"],
@@ -66,10 +72,81 @@ const Participants = () => {
     }
   };
 
+  const handleDelete = async (inscriptionId: string) => {
+    setDeleting(inscriptionId);
+    try {
+      // Delete presence first (foreign key)
+      await supabase.from("presences").delete().eq("inscription_id", inscriptionId);
+      // Then delete inscription
+      const { error } = await supabase.from("inscriptions").delete().eq("id", inscriptionId);
+      if (error) throw error;
+      toast.success("Participant supprimé avec succès");
+      queryClient.invalidateQueries({ queryKey: ["admin-participants-by-formation"] });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de la suppression");
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleExportExcel = () => {
+    if (!filtered.length) {
+      toast.error("Aucun participant à exporter");
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // Global sheet with all participants
+    const allData = filtered.map((p) => ({
+      "Formation": p.formation_titre ?? "",
+      "Thème": p.theme ?? "",
+      "Date": p.date_debut ?? "",
+      "Lieu": p.lieu ?? "",
+      "Nom Dirigeant": p.nom_dirigeant ?? "",
+      "Entreprise": p.nom_entreprise ?? "",
+      "Email": p.email ?? "",
+      "Téléphone": p.telephone ?? "",
+      "Source": p.source ?? "",
+      "Statut Inscription": p.statut_inscription ?? "",
+      "Présent": p.present === true ? "Oui" : p.present === false ? "Non" : "—",
+    }));
+    const ws = XLSX.utils.json_to_sheet(allData);
+    ws["!cols"] = [
+      { wch: 30 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
+      { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 },
+      { wch: 18 }, { wch: 18 }, { wch: 10 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, "Tous les participants");
+
+    // One sheet per formation
+    for (const [, group] of Object.entries(grouped)) {
+      const sheetData = group.participants.map((p) => ({
+        "Nom Dirigeant": p.nom_dirigeant ?? "",
+        "Entreprise": p.nom_entreprise ?? "",
+        "Email": p.email ?? "",
+        "Téléphone": p.telephone ?? "",
+        "Source": p.source ?? "",
+        "Statut": p.statut_inscription ?? "",
+        "Présent": p.present === true ? "Oui" : p.present === false ? "Non" : "—",
+      }));
+      const sheetWs = XLSX.utils.json_to_sheet(sheetData);
+      sheetWs["!cols"] = [
+        { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
+      ];
+      const safeName = (group.titre).slice(0, 28).replace(/[\\/*?[\]:]/g, "");
+      XLSX.utils.book_append_sheet(wb, sheetWs, safeName);
+    }
+
+    XLSX.writeFile(wb, `participants-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Export Excel téléchargé");
+  };
+
   return (
     <AdminLayout title="Participants" subtitle="Liste des participants inscrits par formation">
-      <div className="mb-6">
-        <div className="relative max-w-sm">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+        <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher un participant ou une formation..."
@@ -78,6 +155,10 @@ const Participants = () => {
             className="pl-9"
           />
         </div>
+        <Button onClick={handleExportExcel} variant="outline" className="gap-2 shrink-0">
+          <Download className="w-4 h-4" />
+          Exporter en Excel
+        </Button>
       </div>
 
       {isLoading ? (
@@ -133,6 +214,7 @@ const Participants = () => {
                           <TableHead>Téléphone</TableHead>
                           <TableHead>Statut</TableHead>
                           <TableHead>Présence</TableHead>
+                          <TableHead className="w-12"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -155,6 +237,41 @@ const Participants = () => {
                               ) : (
                                 <span className="text-muted-foreground text-sm">—</span>
                               )}
+                            </TableCell>
+                            <TableCell>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                    disabled={deleting === p.inscription_id}
+                                  >
+                                    {deleting === p.inscription_id ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Supprimer ce participant ?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Vous êtes sur le point de supprimer l'inscription de <strong>{p.nom_dirigeant}</strong> ({p.nom_entreprise}) de la formation <strong>{group.titre}</strong>. Cette action est irréversible.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(p.inscription_id!)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Supprimer
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </TableCell>
                           </TableRow>
                         ))}
