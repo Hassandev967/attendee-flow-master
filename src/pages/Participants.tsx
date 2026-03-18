@@ -156,10 +156,13 @@ const Participants = () => {
             className="pl-9"
           />
         </div>
-        <Button onClick={handleExportExcel} variant="outline" className="gap-2 shrink-0">
-          <Download className="w-4 h-4" />
-          Exporter en Excel
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <ImportParticipantsDialog />
+          <Button onClick={handleExportExcel} variant="outline" className="gap-2 shrink-0">
+            <Download className="w-4 h-4" />
+            Exporter en Excel
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
