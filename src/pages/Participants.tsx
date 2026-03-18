@@ -1,4 +1,5 @@
 import AdminLayout from "@/components/AdminLayout";
+import ImportParticipantsDialog from "@/components/ImportParticipantsDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
