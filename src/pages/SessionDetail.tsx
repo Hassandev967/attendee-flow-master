@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User, Trash2, Mail, Phone, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import EditSessionDialog from "@/components/EditSessionDialog";
 import { toast } from "@/hooks/use-toast";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +63,19 @@ const SessionDetail = () => {
         .select("*, inscriptions(count)")
         .eq("id", id!)
         .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const { data: participants } = useQuery({
+    queryKey: ["formation-participants", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_inscriptions")
+        .select("*")
+        .eq("formation_id", id!);
       if (error) throw error;
       return data;
     },
@@ -230,6 +244,71 @@ const SessionDetail = () => {
             Voir formulaire d'inscription
           </Button>
         </div>
+      </div>
+
+      {/* Liste des participants */}
+      <div className="stat-card mt-6">
+        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Users className="w-5 h-5 text-accent" />
+          Participants inscrits ({participants?.length ?? 0})
+        </h3>
+        {participants && participants.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom du dirigeant</TableHead>
+                  <TableHead>Entreprise</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Présence</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {participants.map((p) => (
+                  <TableRow key={p.inscription_id}>
+                    <TableCell className="font-medium">{p.nom_dirigeant}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        {p.nom_entreprise}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                        {p.email}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {p.telephone && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                          {p.telephone}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{p.source || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">
+                        {p.statut_inscription}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={`text-xs ${p.present ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                        {p.present ? "Présent" : "Non enregistré"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-6">Aucun participant inscrit pour cette formation.</p>
+        )}
       </div>
     </AdminLayout>
   );
