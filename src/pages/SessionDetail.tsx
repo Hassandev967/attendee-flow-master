@@ -69,6 +69,19 @@ const SessionDetail = () => {
     enabled: !!id,
   });
 
+  const { data: participants } = useQuery({
+    queryKey: ["formation-participants", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_inscriptions")
+        .select("*")
+        .eq("formation_id", id!);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
   if (isLoading) {
     return (
       <AdminLayout title="Chargement...">
