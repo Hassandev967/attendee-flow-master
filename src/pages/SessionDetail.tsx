@@ -245,6 +245,71 @@ const SessionDetail = () => {
           </Button>
         </div>
       </div>
+
+      {/* Liste des participants */}
+      <div className="stat-card mt-6">
+        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Users className="w-5 h-5 text-accent" />
+          Participants inscrits ({participants?.length ?? 0})
+        </h3>
+        {participants && participants.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom du dirigeant</TableHead>
+                  <TableHead>Entreprise</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Présence</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {participants.map((p) => (
+                  <TableRow key={p.inscription_id}>
+                    <TableCell className="font-medium">{p.nom_dirigeant}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        {p.nom_entreprise}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                        {p.email}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {p.telephone && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                          {p.telephone}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{p.source || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">
+                        {p.statut_inscription}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={`text-xs ${p.present ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                        {p.present ? "Présent" : "Non enregistré"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-6">Aucun participant inscrit pour cette formation.</p>
+        )}
+      </div>
     </AdminLayout>
   );
 };
