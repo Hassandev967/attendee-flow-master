@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import EditSessionDialog from "@/components/EditSessionDialog";
 import { toast } from "@/hooks/use-toast";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
