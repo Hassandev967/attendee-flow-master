@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User, Trash2, Mail, Phone, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
