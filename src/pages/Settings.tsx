@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Save, Building2, Mail, Bell, Shield, Loader2, KeyRound } from "lucide-react";
+import { Save, Building2, Mail, Bell, Shield, Loader2, KeyRound, ChevronDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import CustomFieldsManager from "@/components/CustomFieldsManager";
+import DropdownMenusManager from "@/components/DropdownMenusManager";
 import { supabase } from "@/integrations/supabase/client";
 
 type SettingsMap = Record<string, string>;
