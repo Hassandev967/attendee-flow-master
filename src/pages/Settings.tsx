@@ -191,6 +191,17 @@ const Settings = () => {
         {/* Changer mon mot de passe */}
         <ChangePasswordSection />
 
+        {/* Champs personnalisés */}
+        <div className="stat-card">
+          <CustomFieldsManager />
+        </div>
+
+        {/* Menus déroulants */}
+        <div className="stat-card">
+          <DropdownMenusManager />
+        </div>
+
+
         <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Sauvegarder les paramètres
