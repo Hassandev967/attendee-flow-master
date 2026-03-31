@@ -19,6 +19,7 @@ interface FormationFormData {
   formateur: string;
   places: number;
   statut: string;
+  type: "formation" | "evenement";
 }
 
 const defaultForm: FormationFormData = {
@@ -30,6 +31,7 @@ const defaultForm: FormationFormData = {
   formateur: "",
   places: 30,
   statut: "A venir",
+  type: "formation",
 };
 
 const themes = ["Export", "Logistique", "Finance", "Marketing"];
@@ -81,15 +83,16 @@ const CreateSessionDialog = () => {
         date_debut: data.date_debut,
         duree: data.duree || null,
         lieu: data.lieu || null,
-        formateur: data.formateur || null,
+        formateur: data.type === "formation" ? (data.formateur || null) : null,
         places: data.places,
         statut: data.statut,
+        type: data.type,
         image_url,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Formation créée !" });
+      toast({ title: form.type === "evenement" ? "Événement créé !" : "Formation créée !" });
       queryClient.invalidateQueries({ queryKey: ["admin-formations"] });
       setForm(defaultForm);
       setImageFile(null);
@@ -118,17 +121,45 @@ const CreateSessionDialog = () => {
       <DialogTrigger asChild>
         <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
           <Plus className="w-4 h-4 mr-2" />
-          Nouvelle formation
+          Nouveau
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Créer une formation</DialogTitle>
+          <DialogTitle>{form.type === "evenement" ? "Créer un événement" : "Créer une formation"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           <div className="space-y-2">
+            <Label>Type</Label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => update("type", "formation")}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                  form.type === "formation"
+                    ? "bg-accent text-accent-foreground border-accent"
+                    : "bg-card text-muted-foreground border-border hover:border-accent/50"
+                }`}
+              >
+                📚 Formation
+              </button>
+              <button
+                type="button"
+                onClick={() => update("type", "evenement")}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                  form.type === "evenement"
+                    ? "bg-accent text-accent-foreground border-accent"
+                    : "bg-card text-muted-foreground border-border hover:border-accent/50"
+                }`}
+              >
+                🎪 Événement
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <Label>Titre *</Label>
-            <Input value={form.titre} onChange={(e) => update("titre", e.target.value)} placeholder="Titre de la formation" />
+            <Input value={form.titre} onChange={(e) => update("titre", e.target.value)} placeholder={form.type === "evenement" ? "Titre de l'événement" : "Titre de la formation"} />
           </div>
 
           {/* Image upload */}
@@ -195,15 +226,17 @@ const CreateSessionDialog = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${form.type === "formation" ? "grid-cols-2" : "grid-cols-1"} gap-4`}>
             <div className="space-y-2">
               <Label>Lieu</Label>
               <Input value={form.lieu} onChange={(e) => update("lieu", e.target.value)} placeholder="Ex: Abidjan, Agence CI Export" />
             </div>
-            <div className="space-y-2">
-              <Label>Formateur</Label>
-              <Input value={form.formateur} onChange={(e) => update("formateur", e.target.value)} placeholder="Nom du formateur" />
-            </div>
+            {form.type === "formation" && (
+              <div className="space-y-2">
+                <Label>Formateur</Label>
+                <Input value={form.formateur} onChange={(e) => update("formateur", e.target.value)} placeholder="Nom du formateur" />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -211,12 +244,23 @@ const CreateSessionDialog = () => {
             <Input type="number" min={1} value={form.places} onChange={(e) => update("places", parseInt(e.target.value) || 30)} />
           </div>
 
-          <hr className="border-border" />
-          <CustomFieldsManager />
+          {form.type === "formation" && (
+            <>
+              <hr className="border-border" />
+              <CustomFieldsManager />
+            </>
+          )}
+
+          {form.type === "evenement" && (
+            <div className="rounded-lg bg-muted/50 border border-border p-4 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">Formulaire d'inscription événement</p>
+              <p>Les participants pourront s'inscrire selon 3 catégories : <strong>Entreprises</strong>, <strong>Talent en Mission</strong>, <strong>Jeune</strong>, chacune avec des champs spécifiques.</p>
+            </div>
+          )}
 
           <Button type="submit" disabled={mutation.isPending} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-            Créer la formation
+            {form.type === "evenement" ? "Créer l'événement" : "Créer la formation"}
           </Button>
         </form>
       </DialogContent>

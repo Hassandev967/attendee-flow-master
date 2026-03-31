@@ -154,6 +154,62 @@ export type Database = {
         }
         Relationships: []
       }
+      event_participants: {
+        Row: {
+          id: string
+          formation_id: string
+          categorie: string
+          nom: string
+          prenom: string
+          email: string
+          telephone: string | null
+          entreprise: string | null
+          fonction: string | null
+          pays_origine: string | null
+          niveau_etude: string | null
+          statut: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          formation_id: string
+          categorie: string
+          nom: string
+          prenom: string
+          email: string
+          telephone?: string | null
+          entreprise?: string | null
+          fonction?: string | null
+          pays_origine?: string | null
+          niveau_etude?: string | null
+          statut?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          formation_id?: string
+          categorie?: string
+          nom?: string
+          prenom?: string
+          email?: string
+          telephone?: string | null
+          entreprise?: string | null
+          fonction?: string | null
+          pays_origine?: string | null
+          niveau_etude?: string | null
+          statut?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "formations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       formations: {
         Row: {
           created_at: string
@@ -167,6 +223,7 @@ export type Database = {
           statut: string
           theme: string
           titre: string
+          type: string
           updated_at: string
         }
         Insert: {
@@ -181,6 +238,7 @@ export type Database = {
           statut?: string
           theme: string
           titre: string
+          type?: string
           updated_at?: string
         }
         Update: {
@@ -195,6 +253,7 @@ export type Database = {
           statut?: string
           theme?: string
           titre?: string
+          type?: string
           updated_at?: string
         }
         Relationships: []
