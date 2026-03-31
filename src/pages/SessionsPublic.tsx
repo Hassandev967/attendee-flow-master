@@ -98,6 +98,9 @@ const SessionsPublic = () => {
         </div>
       </header>
 
+      {/* Dynamic menus from admin */}
+      <PublicNavMenus />
+
       <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
         {/* Theme filters */}
         {themes.length > 1 && (
