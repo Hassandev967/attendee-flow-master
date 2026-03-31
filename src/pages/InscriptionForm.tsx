@@ -32,6 +32,7 @@ import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { QRCodeSVG } from "qrcode.react";
 import ciExportLogo from "@/assets/ci-export-logo-blanc.png";
+import EventInscriptionForm from "@/components/EventInscriptionForm";
 
 const inscriptionSchema = z.object({
   civilite: z.string().trim().min(1, "Requis"),
@@ -66,7 +67,7 @@ const InscriptionForm = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("formations")
-        .select("*, inscriptions(count)")
+        .select("*, inscriptions(count), event_participants(count)")
         .eq("id", formationId!)
         .single();
       if (error) throw error;
@@ -74,6 +75,8 @@ const InscriptionForm = () => {
     },
     enabled: !!formationId,
   });
+
+  const isEvent = formation?.type === "evenement";
 
   const { data: secteurs } = useQuery({
     queryKey: ["secteurs"],
@@ -251,6 +254,11 @@ const InscriptionForm = () => {
         </div>
       </div>
     );
+  }
+
+  if (isEvent) {
+    const eventCount = (formation.event_participants as any)?.[0]?.count ?? 0;
+    return <EventInscriptionForm formation={formation} eventParticipantCount={eventCount} />;
   }
 
   if (submitted) {

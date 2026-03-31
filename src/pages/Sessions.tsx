@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 type FormationStatut = "A venir" | "En cours" | "Terminée" | "Annulée" | "all";
+type TypeFilter = "all" | "formation" | "evenement";
 
 const statusFilters: { label: string; value: FormationStatut }[] = [
   { label: "Toutes", value: "all" },
@@ -44,6 +45,7 @@ const SUPERADMIN_EMAILS = ["t.coulibaly@cotedivoirexport.ci", "h.cisse@cotedivoi
 
 const Sessions = () => {
   const [filter, setFilter] = useState<FormationStatut>("all");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -54,7 +56,7 @@ const Sessions = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("formations")
-        .select("*, inscriptions(count)")
+        .select("*, inscriptions(count), event_participants(count)")
         .order("date_debut", { ascending: false });
       if (error) throw error;
       return data;
@@ -76,29 +78,53 @@ const Sessions = () => {
     },
   });
 
-  const filtered = formations
+  const afterStatusFilter = formations
     ? filter === "all"
       ? formations
       : formations.filter((f) => f.statut === filter)
     : [];
+  const filtered = typeFilter === "all"
+    ? afterStatusFilter
+    : afterStatusFilter.filter((f) => f.type === typeFilter);
 
   return (
-    <AdminLayout title="Formations" subtitle="Gérez vos formations">
+    <AdminLayout title="Formations & Événements" subtitle="Gérez vos formations et événements">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-1.5 flex-wrap bg-muted/50 p-1 rounded-lg">
-          {statusFilters.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all duration-200 ${
-                filter === f.value
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap bg-muted/50 p-1 rounded-lg">
+            {statusFilters.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all duration-200 ${
+                  filter === f.value
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-lg">
+            {([
+              { value: "all" as TypeFilter, label: "Tout" },
+              { value: "formation" as TypeFilter, label: "📚 Formations" },
+              { value: "evenement" as TypeFilter, label: "🎪 Événements" },
+            ]).map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setTypeFilter(f.value)}
+                className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all duration-200 ${
+                  typeFilter === f.value
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
         <CreateSessionDialog />
       </div>
@@ -110,7 +136,10 @@ const Sessions = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
           {filtered.map((formation) => {
-            const inscrits = (formation.inscriptions as any)?.[0]?.count ?? 0;
+            const isEvt = formation.type === "evenement";
+            const inscrits = isEvt
+              ? ((formation.event_participants as any)?.[0]?.count ?? 0)
+              : ((formation.inscriptions as any)?.[0]?.count ?? 0);
             const pct = Math.min(100, Math.round((inscrits / formation.places) * 100));
             return (
               <div
@@ -124,9 +153,16 @@ const Sessions = () => {
                   </div>
                 )}
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] font-semibold text-accent uppercase tracking-widest">
-                    {formation.theme}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-semibold text-accent uppercase tracking-widest">
+                      {formation.theme}
+                    </span>
+                    {isEvt && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 uppercase tracking-wide">
+                        Événement
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     {isSuperAdmin && (
                       <AlertDialog>
