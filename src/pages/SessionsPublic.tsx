@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { QRCodeSVG } from "qrcode.react";
 import vdeLogo from "@/assets/vde-logo.png";
 import ciExportLogo from "@/assets/ci-export-logo-blanc.png";
+import PublicNavMenus from "@/components/PublicNavMenus";
 
 const BASE_URL = window.location.origin;
 
@@ -96,6 +97,9 @@ const SessionsPublic = () => {
           </svg>
         </div>
       </header>
+
+      {/* Dynamic menus from admin */}
+      <PublicNavMenus />
 
       <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
         {/* Theme filters */}
