@@ -39,6 +39,7 @@ const App = () => (
             <Route path="/formations" element={<SessionsPublic />} />
             <Route path="/sessions/:id" element={<SessionDetail />} />
             <Route path="/inscription/:sessionId" element={<InscriptionForm />} />
+            <Route path="/formulaire/:slug" element={<FormPublicView />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
