@@ -51,6 +51,9 @@ const App = () => (
             <Route path="/admin/emargement" element={<ProtectedRoute><Emargement /></ProtectedRoute>} />
             <Route path="/admin/reporting" element={<ProtectedRoute><Reporting /></ProtectedRoute>} />
             <Route path="/admin/attestations" element={<ProtectedRoute><Attestations /></ProtectedRoute>} />
+            <Route path="/admin/formulaires" element={<ProtectedRoute><FormBuilder /></ProtectedRoute>} />
+            <Route path="/admin/formulaires/:id" element={<ProtectedRoute><FormFieldsEditor /></ProtectedRoute>} />
+            <Route path="/admin/formulaires/:id/reponses" element={<ProtectedRoute><FormSubmissions /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin/utilisateurs" element={<ProtectedRoute><UsersManagement /></ProtectedRoute>} />
 
