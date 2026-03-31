@@ -16,10 +16,6 @@ import Reporting from "./pages/Reporting";
 import Attestations from "./pages/Attestations";
 import Settings from "./pages/Settings";
 import UsersManagement from "./pages/UsersManagement";
-import FormBuilder from "./pages/FormBuilder";
-import FormFieldsEditor from "./pages/FormFieldsEditor";
-import FormSubmissions from "./pages/FormSubmissions";
-import FormPublicView from "./pages/FormPublicView";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -39,7 +35,6 @@ const App = () => (
             <Route path="/formations" element={<SessionsPublic />} />
             <Route path="/sessions/:id" element={<SessionDetail />} />
             <Route path="/inscription/:sessionId" element={<InscriptionForm />} />
-            <Route path="/formulaire/:slug" element={<FormPublicView />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -51,9 +46,6 @@ const App = () => (
             <Route path="/admin/emargement" element={<ProtectedRoute><Emargement /></ProtectedRoute>} />
             <Route path="/admin/reporting" element={<ProtectedRoute><Reporting /></ProtectedRoute>} />
             <Route path="/admin/attestations" element={<ProtectedRoute><Attestations /></ProtectedRoute>} />
-            <Route path="/admin/formulaires" element={<ProtectedRoute><FormBuilder /></ProtectedRoute>} />
-            <Route path="/admin/formulaires/:id" element={<ProtectedRoute><FormFieldsEditor /></ProtectedRoute>} />
-            <Route path="/admin/formulaires/:id/reponses" element={<ProtectedRoute><FormSubmissions /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin/utilisateurs" element={<ProtectedRoute><UsersManagement /></ProtectedRoute>} />
 
