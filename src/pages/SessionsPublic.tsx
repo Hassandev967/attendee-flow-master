@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { QRCodeSVG } from "qrcode.react";
 import vdeLogo from "@/assets/vde-logo.png";
 import ciExportLogo from "@/assets/ci-export-logo-blanc.png";
+import PublicNavMenus from "@/components/PublicNavMenus";
 
 const BASE_URL = window.location.origin;
 
