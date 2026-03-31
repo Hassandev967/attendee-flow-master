@@ -21,12 +21,9 @@ interface FormationData {
   places: number;
   statut: string;
   image_url: string | null;
-  type: string;
 }
 
 const themes = ["Export", "Logistique", "Finance", "Marketing"];
-
-const isEvent = (f: FormationData) => f.type === "evenement";
 
 const EditSessionDialog = ({ formation }: { formation: FormationData }) => {
   const [open, setOpen] = useState(false);
@@ -130,18 +127,12 @@ const EditSessionDialog = ({ formation }: { formation: FormationData }) => {
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Modifier {isEvent(formation) ? "l'événement" : "la formation"}</DialogTitle>
+          <DialogTitle>Modifier la formation</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
-              {isEvent(formation) ? "🎪 Événement" : "📚 Formation"}
-            </span>
-          </div>
-
           <div className="space-y-2">
             <Label>Titre *</Label>
-            <Input value={form.titre} onChange={(e) => update("titre", e.target.value)} placeholder={isEvent(formation) ? "Titre de l'événement" : "Titre de la formation"} />
+            <Input value={form.titre} onChange={(e) => update("titre", e.target.value)} placeholder="Titre de la formation" />
           </div>
 
           {/* Image upload */}
@@ -208,17 +199,15 @@ const EditSessionDialog = ({ formation }: { formation: FormationData }) => {
             </div>
           </div>
 
-          <div className={`grid ${isEvent(formation) ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Lieu</Label>
               <Input value={form.lieu} onChange={(e) => update("lieu", e.target.value)} placeholder="Ex: Abidjan, Agence CI Export" />
             </div>
-            {!isEvent(formation) && (
-              <div className="space-y-2">
-                <Label>Formateur</Label>
-                <Input value={form.formateur} onChange={(e) => update("formateur", e.target.value)} placeholder="Nom du formateur" />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label>Formateur</Label>
+              <Input value={form.formateur} onChange={(e) => update("formateur", e.target.value)} placeholder="Nom du formateur" />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -226,12 +215,8 @@ const EditSessionDialog = ({ formation }: { formation: FormationData }) => {
             <Input type="number" min={1} value={form.places} onChange={(e) => update("places", parseInt(e.target.value) || 30)} />
           </div>
 
-          {!isEvent(formation) && (
-            <>
-              <hr className="border-border" />
-              <CustomFieldsManager />
-            </>
-          )}
+          <hr className="border-border" />
+          <CustomFieldsManager />
 
           <Button type="submit" disabled={mutation.isPending} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}

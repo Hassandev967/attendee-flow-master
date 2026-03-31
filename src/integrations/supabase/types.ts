@@ -154,61 +154,144 @@ export type Database = {
         }
         Relationships: []
       }
-      event_participants: {
+      dropdown_menus: {
         Row: {
-          id: string
-          formation_id: string
-          categorie: string
-          nom: string
-          prenom: string
-          email: string
-          telephone: string | null
-          entreprise: string | null
-          fonction: string | null
-          pays_origine: string | null
-          niveau_etude: string | null
-          statut: string
           created_at: string
+          id: string
+          name: string
+          options: Json
+          updated_at: string
         }
         Insert: {
-          id?: string
-          formation_id: string
-          categorie: string
-          nom: string
-          prenom: string
-          email: string
-          telephone?: string | null
-          entreprise?: string | null
-          fonction?: string | null
-          pays_origine?: string | null
-          niveau_etude?: string | null
-          statut?: string
           created_at?: string
+          id?: string
+          name: string
+          options?: Json
+          updated_at?: string
         }
         Update: {
-          id?: string
-          formation_id?: string
-          categorie?: string
-          nom?: string
-          prenom?: string
-          email?: string
-          telephone?: string | null
-          entreprise?: string | null
-          fonction?: string | null
-          pays_origine?: string | null
-          niveau_etude?: string | null
-          statut?: string
           created_at?: string
+          id?: string
+          name?: string
+          options?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dynamic_form_fields: {
+        Row: {
+          created_at: string
+          field_type: string
+          form_id: string
+          id: string
+          label: string
+          options: Json | null
+          placeholder: string | null
+          position: number
+          required: boolean
+          width: string
+        }
+        Insert: {
+          created_at?: string
+          field_type?: string
+          form_id: string
+          id?: string
+          label: string
+          options?: Json | null
+          placeholder?: string | null
+          position?: number
+          required?: boolean
+          width?: string
+        }
+        Update: {
+          created_at?: string
+          field_type?: string
+          form_id?: string
+          id?: string
+          label?: string
+          options?: Json | null
+          placeholder?: string | null
+          position?: number
+          required?: boolean
+          width?: string
         }
         Relationships: [
           {
-            foreignKeyName: "event_participants_formation_id_fkey"
-            columns: ["formation_id"]
+            foreignKeyName: "dynamic_form_fields_form_id_fkey"
+            columns: ["form_id"]
             isOneToOne: false
-            referencedRelation: "formations"
+            referencedRelation: "dynamic_forms"
             referencedColumns: ["id"]
           },
         ]
+      }
+      dynamic_form_submissions: {
+        Row: {
+          created_at: string
+          data: Json
+          form_id: string
+          id: string
+          submitted_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          form_id: string
+          id?: string
+          submitted_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          form_id?: string
+          id?: string
+          submitted_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dynamic_form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "dynamic_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dynamic_forms: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_public: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       formations: {
         Row: {
@@ -223,7 +306,6 @@ export type Database = {
           statut: string
           theme: string
           titre: string
-          type: string
           updated_at: string
         }
         Insert: {
@@ -238,7 +320,6 @@ export type Database = {
           statut?: string
           theme: string
           titre: string
-          type?: string
           updated_at?: string
         }
         Update: {
@@ -253,7 +334,6 @@ export type Database = {
           statut?: string
           theme?: string
           titre?: string
-          type?: string
           updated_at?: string
         }
         Relationships: []

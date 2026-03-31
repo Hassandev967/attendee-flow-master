@@ -27,14 +27,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { QRCodeSVG } from "qrcode.react";
 import vdeLogo from "@/assets/vde-logo.png";
 import ciExportLogo from "@/assets/ci-export-logo-blanc.png";
+import PublicNavMenus from "@/components/PublicNavMenus";
 
 const BASE_URL = window.location.origin;
 
-type TypeFilter = "all" | "formation" | "evenement";
-
 const SessionsPublic = () => {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<TypeFilter>("all");
   const [qrFormation, setQrFormation] = useState<{ id: string; titre: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; titre: string } | null>(null);
 
@@ -43,7 +41,7 @@ const SessionsPublic = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("formations")
-        .select("*, inscriptions(count), event_participants(count)")
+        .select("*, inscriptions(count)")
         .in("statut", ["A venir", "En cours"])
         .order("date_debut", { ascending: true });
       if (error) throw error;
@@ -51,13 +49,8 @@ const SessionsPublic = () => {
     },
   });
 
-  const hasEvents = formations?.some((f) => f.type === "evenement");
-  const hasFormations = formations?.some((f) => f.type === "formation");
-  const showTypeFilter = hasEvents && hasFormations;
-
   const themes = formations ? [...new Set(formations.map((f) => f.theme))].sort() : [];
-  const afterTypeFilter = selectedType === "all" ? formations : formations?.filter((f) => f.type === selectedType);
-  const filtered = selectedTheme ? afterTypeFilter?.filter((f) => f.theme === selectedTheme) : afterTypeFilter;
+  const filtered = selectedTheme ? formations?.filter((f) => f.theme === selectedTheme) : formations;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -76,11 +69,11 @@ const SessionsPublic = () => {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-                  Nos formations &amp; événements<br />
+                  Nos formations<br />
                   <span className="text-accent">disponibles</span>
                 </h1>
                 <p className="text-green-100/70 text-base sm:text-lg max-w-xl leading-relaxed">
-                  Découvrez nos programmes de renforcement des capacités, nos événements et inscrivez-vous en ligne.
+                  Découvrez nos programmes de renforcement des capacités et inscrivez-vous en ligne.
                 </p>
               </div>
               <div className="flex items-center gap-4 pt-2">
@@ -105,32 +98,10 @@ const SessionsPublic = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-        {/* Type filter */}
-        {showTypeFilter && (
-          <div className="mb-6 animate-fade-in">
-            <div className="flex flex-wrap gap-2">
-              {([
-                { value: "all" as TypeFilter, label: "Tout" },
-                { value: "formation" as TypeFilter, label: "📚 Formations" },
-                { value: "evenement" as TypeFilter, label: "🎪 Événements" },
-              ]).map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => setSelectedType(f.value)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
-                    selectedType === f.value
-                      ? "bg-accent text-accent-foreground border-accent shadow-sm"
-                      : "bg-card text-muted-foreground border-border hover:border-accent/50 hover:text-foreground"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Dynamic menus from admin */}
+      <PublicNavMenus />
 
+      <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
         {/* Theme filters */}
         {themes.length > 1 && (
           <div className="mb-8 animate-fade-in">
@@ -185,10 +156,7 @@ const SessionsPublic = () => {
         ) : (
           <div className="grid gap-4 stagger-children">
             {filtered.map((formation) => {
-              const isEvt = formation.type === "evenement";
-              const inscrits = isEvt
-                ? ((formation.event_participants as any)?.[0]?.count ?? 0)
-                : ((formation.inscriptions as any)?.[0]?.count ?? 0);
+              const inscrits = (formation.inscriptions as any)?.[0]?.count ?? 0;
               const placesRestantes = formation.places - inscrits;
 
               return (
@@ -212,11 +180,6 @@ const SessionsPublic = () => {
                         <Badge variant="outline" className="text-[10px] font-semibold text-accent border-accent/30 uppercase tracking-wider">
                           {formation.theme}
                         </Badge>
-                        {isEvt && (
-                          <Badge variant="secondary" className="text-[10px] bg-purple-100 text-purple-700 border-0">
-                            🎪 Événement
-                          </Badge>
-                        )}
                         {formation.statut === "En cours" && (
                           <Badge variant="secondary" className="text-[10px] bg-accent/10 text-accent border-0">
                             En cours

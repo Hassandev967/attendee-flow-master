@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User, Trash2, Mail, Phone, Building2, Globe } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Link as LinkIcon, Loader2, User, Trash2, Mail, Phone, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -42,7 +42,6 @@ const SessionDetail = () => {
   const deleteFormation = useMutation({
     mutationFn: async () => {
       await supabase.from("inscriptions").delete().eq("formation_id", id!);
-      await supabase.from("event_participants").delete().eq("formation_id", id!);
       const { error } = await supabase.from("formations").delete().eq("id", id!);
       if (error) throw error;
     },
@@ -61,7 +60,7 @@ const SessionDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("formations")
-        .select("*, inscriptions(count), event_participants(count)")
+        .select("*, inscriptions(count)")
         .eq("id", id!)
         .single();
       if (error) throw error;
@@ -69,8 +68,6 @@ const SessionDetail = () => {
     },
     enabled: !!id,
   });
-
-  const isEvent = formation?.type === "evenement";
 
   const { data: participants } = useQuery({
     queryKey: ["formation-participants", id],
@@ -82,21 +79,7 @@ const SessionDetail = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id && !isEvent,
-  });
-
-  const { data: eventParticipants } = useQuery({
-    queryKey: ["event-participants", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("event_participants")
-        .select("*")
-        .eq("formation_id", id!)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id && isEvent,
+    enabled: !!id,
   });
 
   if (isLoading) {
@@ -117,9 +100,7 @@ const SessionDetail = () => {
     );
   }
 
-  const inscrits = isEvent
-    ? ((formation.event_participants as any)?.[0]?.count ?? 0)
-    : ((formation.inscriptions as any)?.[0]?.count ?? 0);
+  const inscrits = (formation.inscriptions as any)?.[0]?.count ?? 0;
   const tauxRemplissage = formation.places > 0 ? Math.round((inscrits / formation.places) * 100) : 0;
   const inscriptionUrl = `${window.location.origin}/inscription/${formation.id}`;
 
@@ -170,7 +151,6 @@ const SessionDetail = () => {
             places: formation.places,
             statut: formation.statut,
             image_url: (formation as any).image_url,
-            type: formation.type || "formation",
           }} />
         </div>
       </div>
@@ -193,11 +173,6 @@ const SessionDetail = () => {
               <Badge variant="secondary" className={`${statusColors[formation.statut] || ""} border-0 font-medium text-xs`}>
                 {formation.statut}
               </Badge>
-              {isEvent && (
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-0 font-medium text-xs">
-                  🎪 Événement
-                </Badge>
-              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
@@ -272,154 +247,69 @@ const SessionDetail = () => {
       </div>
 
       {/* Liste des participants */}
-      {isEvent ? (
-        <div className="stat-card mt-6">
-          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-accent" />
-            Participants inscrits ({eventParticipants?.length ?? 0})
-          </h3>
-          {eventParticipants && eventParticipants.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Catégorie</TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Prénom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Entreprise</TableHead>
-                    <TableHead>Détails</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {eventParticipants.map((p) => {
-                    const catLabel: Record<string, string> = {
-                      entreprise: "Entreprise",
-                      talent: "Talent",
-                      jeune: "Jeune",
-                    };
-                    const catColor: Record<string, string> = {
-                      entreprise: "bg-amber-100 text-amber-800",
-                      talent: "bg-purple-100 text-purple-800",
-                      jeune: "bg-emerald-100 text-emerald-800",
-                    };
-                    return (
-                      <TableRow key={p.id}>
-                        <TableCell>
-                          <Badge variant="secondary" className={`text-[10px] ${catColor[p.categorie] || ""} border-0`}>
-                            {catLabel[p.categorie] || p.categorie}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">{p.nom}</TableCell>
-                        <TableCell>{p.prenom}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                            {p.email}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {p.telephone && (
-                            <div className="flex items-center gap-1.5">
-                              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                              {p.telephone}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {p.entreprise && (
-                            <div className="flex items-center gap-1.5">
-                              <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                              {p.entreprise}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {p.categorie === "entreprise" && p.fonction}
-                          {p.categorie === "talent" && p.pays_origine && (
-                            <div className="flex items-center gap-1">
-                              <Globe className="w-3 h-3" />
-                              {p.pays_origine}
-                            </div>
-                          )}
-                          {p.categorie === "jeune" && p.niveau_etude}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-6">Aucun participant inscrit pour cet événement.</p>
-          )}
-        </div>
-      ) : (
-        <div className="stat-card mt-6">
-          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-accent" />
-            Participants inscrits ({participants?.length ?? 0})
-          </h3>
-          {participants && participants.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom du dirigeant</TableHead>
-                    <TableHead>Entreprise</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Présence</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {participants.map((p) => (
-                    <TableRow key={p.inscription_id}>
-                      <TableCell className="font-medium">{p.nom_dirigeant}</TableCell>
-                      <TableCell>
+      <div className="stat-card mt-6">
+        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Users className="w-5 h-5 text-accent" />
+          Participants inscrits ({participants?.length ?? 0})
+        </h3>
+        {participants && participants.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom du dirigeant</TableHead>
+                  <TableHead>Entreprise</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Présence</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {participants.map((p) => (
+                  <TableRow key={p.inscription_id}>
+                    <TableCell className="font-medium">{p.nom_dirigeant}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        {p.nom_entreprise}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                        {p.email}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {p.telephone && (
                         <div className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                          {p.nom_entreprise}
+                          <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                          {p.telephone}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                          {p.email}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {p.telephone && (
-                          <div className="flex items-center gap-1.5">
-                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                            {p.telephone}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>{p.source || "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="text-xs">
-                          {p.statut_inscription}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={`text-xs ${p.present ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                          {p.present ? "Présent" : "Non enregistré"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-6">Aucun participant inscrit pour cette formation.</p>
-          )}
-        </div>
-      )}
+                      )}
+                    </TableCell>
+                    <TableCell>{p.source || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">
+                        {p.statut_inscription}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={`text-xs ${p.present ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                        {p.present ? "Présent" : "Non enregistré"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-6">Aucun participant inscrit pour cette formation.</p>
+        )}
+      </div>
     </AdminLayout>
   );
 };
