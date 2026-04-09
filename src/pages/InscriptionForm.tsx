@@ -232,7 +232,7 @@ const InscriptionForm = () => {
   }
 
   const deadline = new Date(formation.date_debut);
-  deadline.setDate(deadline.getDate() - 1);
+  deadline.setHours(deadline.getHours() - 2);
   const isClosed = new Date() >= deadline;
 
   if (isClosed) {
