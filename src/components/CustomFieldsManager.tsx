@@ -255,7 +255,7 @@ const CustomFieldsManager = () => {
                 <span className="text-sm font-medium">☐ Non</span>
               </div>
             </div>
-          )
+          )}
 
           <div className="flex items-center gap-2">
             <Switch checked={newRequired} onCheckedChange={setNewRequired} />
