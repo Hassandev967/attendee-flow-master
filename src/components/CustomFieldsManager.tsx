@@ -161,6 +161,11 @@ const CustomFieldsManager = () => {
                     Options : {(field.options as string[]).join(", ")}
                   </p>
                 )}
+                {field.field_type === "checkbox" && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Options : Oui, Non
+                  </p>
+                )}
               </div>
               <Switch
                 checked={field.active}
@@ -239,6 +244,16 @@ const CustomFieldsManager = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {newType === "checkbox" && (
+            <div className="rounded-md border border-border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground mb-2">Aperçu : l'utilisateur verra les options suivantes</p>
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">☑ Oui</span>
+                <span className="text-sm font-medium">☐ Non</span>
+              </div>
             </div>
           )}
 
