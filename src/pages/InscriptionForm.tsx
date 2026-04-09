@@ -615,17 +615,26 @@ const InscriptionForm = () => {
                       </>
                     )}
                     {field.field_type === "checkbox" && (
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`custom_${field.id}`}
-                          checked={customValues[field.id] === "true"}
-                          onCheckedChange={(checked) => {
-                            setCustomValues((prev) => ({ ...prev, [field.id]: checked ? "true" : "false" }));
-                            setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                          }}
-                        />
-                        <label htmlFor={`custom_${field.id}`} className="text-sm cursor-pointer">
-                          {field.label}
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={customValues[field.id] === "true"}
+                            onCheckedChange={() => {
+                              setCustomValues((prev) => ({ ...prev, [field.id]: "true" }));
+                              setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                            }}
+                          />
+                          <span className="text-sm">Oui</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={customValues[field.id] === "false"}
+                            onCheckedChange={() => {
+                              setCustomValues((prev) => ({ ...prev, [field.id]: "false" }));
+                              setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                            }}
+                          />
+                          <span className="text-sm">Non</span>
                         </label>
                       </div>
                     )}
