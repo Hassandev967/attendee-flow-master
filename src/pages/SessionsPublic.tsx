@@ -241,22 +241,13 @@ const SessionsPublic = () => {
                     >
                       <QrCode className="w-3.5 h-3.5" /> QR Code
                     </Button>
-                    {(() => {
-                      const deadline = new Date(formation.date_debut);
-                      deadline.setHours(deadline.getHours() - 2);
-                      const isClosed = new Date() >= deadline;
-                      if (isClosed) {
-                        return <Button disabled variant="secondary" size="sm" className="text-xs">Fermée</Button>;
-                      }
-                      if (placesRestantes <= 0) {
-                        return <Button disabled variant="secondary" size="sm" className="text-xs">Complet</Button>;
-                      }
-                      return (
-                        <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs">
-                          <Link to={`/inscription/${formation.id}`}>S'inscrire</Link>
-                        </Button>
-                      );
-                    })()}
+                    {placesRestantes <= 0 ? (
+                      <Button disabled variant="secondary" size="sm" className="text-xs">Complet</Button>
+                    ) : (
+                      <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs">
+                        <Link to={`/inscription/${formation.id}`}>S'inscrire</Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
