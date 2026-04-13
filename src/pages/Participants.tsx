@@ -129,6 +129,7 @@ const Participants = () => {
       "Entreprise": p.nom_entreprise ?? "",
       "Email": p.email ?? "",
       "Téléphone": p.telephone ?? "",
+      "Secteur d'activité": getSecteurs(p.participant_id),
       "Source": p.source ?? "",
       "Statut Inscription": p.statut_inscription ?? "",
       "Présent": p.present === true ? "Oui" : p.present === false ? "Non" : "—",
@@ -137,7 +138,7 @@ const Participants = () => {
     ws["!cols"] = [
       { wch: 30 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
       { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 },
-      { wch: 18 }, { wch: 18 }, { wch: 10 },
+      { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
     ];
     XLSX.utils.book_append_sheet(wb, ws, "Tous les participants");
 
@@ -148,6 +149,7 @@ const Participants = () => {
         "Entreprise": p.nom_entreprise ?? "",
         "Email": p.email ?? "",
         "Téléphone": p.telephone ?? "",
+        "Secteur d'activité": getSecteurs(p.participant_id),
         "Source": p.source ?? "",
         "Statut": p.statut_inscription ?? "",
         "Présent": p.present === true ? "Oui" : p.present === false ? "Non" : "—",
