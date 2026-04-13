@@ -33,6 +33,26 @@ const Participants = () => {
     },
   });
 
+  const { data: participantSecteurs } = useQuery({
+    queryKey: ["participant-secteurs-for-export"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("participant_secteurs")
+        .select("participant_id, secteurs(nom)");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getSecteurs = (participantId: string | null) => {
+    if (!participantId || !participantSecteurs) return "";
+    return participantSecteurs
+      .filter((ps) => ps.participant_id === participantId)
+      .map((ps) => (ps.secteurs as any)?.nom ?? "")
+      .filter(Boolean)
+      .join(", ");
+  };
+
   const filtered = inscriptions?.filter(
     (i) =>
       `${i.nom_dirigeant} ${i.nom_entreprise} ${i.email} ${i.formation_titre}`.toLowerCase().includes(search.toLowerCase())
