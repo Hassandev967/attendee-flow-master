@@ -33,6 +33,26 @@ const Participants = () => {
     },
   });
 
+  const { data: participantSecteurs } = useQuery({
+    queryKey: ["participant-secteurs-for-export"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("participant_secteurs")
+        .select("participant_id, secteurs(nom)");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getSecteurs = (participantId: string | null) => {
+    if (!participantId || !participantSecteurs) return "";
+    return participantSecteurs
+      .filter((ps) => ps.participant_id === participantId)
+      .map((ps) => (ps.secteurs as any)?.nom ?? "")
+      .filter(Boolean)
+      .join(", ");
+  };
+
   const filtered = inscriptions?.filter(
     (i) =>
       `${i.nom_dirigeant} ${i.nom_entreprise} ${i.email} ${i.formation_titre}`.toLowerCase().includes(search.toLowerCase())
@@ -109,6 +129,7 @@ const Participants = () => {
       "Entreprise": p.nom_entreprise ?? "",
       "Email": p.email ?? "",
       "Téléphone": p.telephone ?? "",
+      "Secteur d'activité": getSecteurs(p.participant_id),
       "Source": p.source ?? "",
       "Statut Inscription": p.statut_inscription ?? "",
       "Présent": p.present === true ? "Oui" : p.present === false ? "Non" : "—",
@@ -117,7 +138,7 @@ const Participants = () => {
     ws["!cols"] = [
       { wch: 30 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
       { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 },
-      { wch: 18 }, { wch: 18 }, { wch: 10 },
+      { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
     ];
     XLSX.utils.book_append_sheet(wb, ws, "Tous les participants");
 
@@ -128,13 +149,14 @@ const Participants = () => {
         "Entreprise": p.nom_entreprise ?? "",
         "Email": p.email ?? "",
         "Téléphone": p.telephone ?? "",
+        "Secteur d'activité": getSecteurs(p.participant_id),
         "Source": p.source ?? "",
         "Statut": p.statut_inscription ?? "",
         "Présent": p.present === true ? "Oui" : p.present === false ? "Non" : "—",
       }));
       const sheetWs = XLSX.utils.json_to_sheet(sheetData);
       sheetWs["!cols"] = [
-        { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
+        { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
       ];
       const safeName = (group.titre).slice(0, 28).replace(/[\\/*?[\]:]/g, "");
       XLSX.utils.book_append_sheet(wb, sheetWs, safeName);
