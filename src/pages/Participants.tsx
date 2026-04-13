@@ -156,7 +156,7 @@ const Participants = () => {
       }));
       const sheetWs = XLSX.utils.json_to_sheet(sheetData);
       sheetWs["!cols"] = [
-        { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
+        { wch: 22 }, { wch: 25 }, { wch: 28 }, { wch: 16 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 10 },
       ];
       const safeName = (group.titre).slice(0, 28).replace(/[\\/*?[\]:]/g, "");
       XLSX.utils.book_append_sheet(wb, sheetWs, safeName);
