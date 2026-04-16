@@ -534,6 +534,7 @@ const InscriptionForm = () => {
                 className="mt-2 h-12 text-base"
               />
             )}
+            <FieldError field="source_id" />
           </div>
 
           {/* Custom fields */}
