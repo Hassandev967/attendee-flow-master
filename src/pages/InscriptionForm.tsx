@@ -492,7 +492,7 @@ const InscriptionForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ?</Label>
+            <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ? <span className="text-destructive">*</span></Label>
             <Select
               value={autreSource ? "autre" : formData.source_id?.toString() || ""}
               onValueChange={(v) => {
