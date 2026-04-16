@@ -41,7 +41,7 @@ const inscriptionSchema = z.object({
   nom_entreprise: z.string().trim().min(1, "Requis").max(255),
   email: z.string().trim().email("Email invalide").max(255),
   telephone: z.string().trim().min(1, "Requis").max(30),
-  source_id: z.number().optional(),
+  source_id: z.number({ required_error: "Requis" }),
   secteur_ids: z.array(z.number()).min(1, "Sélectionnez au moins un secteur"),
 });
 
@@ -492,7 +492,7 @@ const InscriptionForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ?</Label>
+            <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ? <span className="text-destructive">*</span></Label>
             <Select
               value={autreSource ? "autre" : formData.source_id?.toString() || ""}
               onValueChange={(v) => {
@@ -534,6 +534,7 @@ const InscriptionForm = () => {
                 className="mt-2 h-12 text-base"
               />
             )}
+            <FieldError field="source_id" />
           </div>
 
           {/* Custom fields */}
