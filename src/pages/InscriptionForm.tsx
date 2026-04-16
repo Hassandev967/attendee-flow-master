@@ -41,7 +41,7 @@ const inscriptionSchema = z.object({
   nom_entreprise: z.string().trim().min(1, "Requis").max(255),
   email: z.string().trim().email("Email invalide").max(255),
   telephone: z.string().trim().min(1, "Requis").max(30),
-  source_id: z.number().optional(),
+  source_id: z.number({ required_error: "Requis" }),
   secteur_ids: z.array(z.number()).min(1, "Sélectionnez au moins un secteur"),
 });
 
