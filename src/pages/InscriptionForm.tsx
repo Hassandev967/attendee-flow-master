@@ -526,6 +526,14 @@ const InscriptionForm = () => {
                 className="mt-2 h-12 text-base"
               />
             )}
+            {!autreSource && sources?.find((s) => s.id === formData.source_id && s.nom === "Partenariat") && (
+              <Input
+                value={autreSourceTexte}
+                onChange={(e) => setAutreSourceTexte(e.target.value)}
+                placeholder="Préciser le partenariat..."
+                className="mt-2 h-12 text-base"
+              />
+            )}
           </div>
 
           {/* Custom fields */}
