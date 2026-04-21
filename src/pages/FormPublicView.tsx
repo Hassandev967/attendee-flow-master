@@ -139,16 +139,30 @@ const FormPublicView = () => {
         <div className="stat-card">
           <div className="grid grid-cols-2 gap-4">
             {fields?.map((field) => {
-              if (field.field_type === "heading") {
+              const ft = (field.field_type || "text").toLowerCase();
+              if (ft === "heading") {
                 return (
                   <div key={field.id} className="col-span-2 pt-4 first:pt-0">
                     <h3 className="text-base font-semibold text-foreground">{field.label}</h3>
                   </div>
                 );
               }
-              if (field.field_type === "separator") {
+              if (ft === "separator") {
                 return <Separator key={field.id} className="col-span-2 my-2" />;
               }
+
+              const isText = ["text", "string", ""].includes(ft);
+              const isTextarea = ft === "textarea";
+              const isEmail = ft === "email";
+              const isTel = ["tel", "phone"].includes(ft);
+              const isNumber = ft === "number";
+              const isDate = ft === "date";
+              const isSelect = ["select", "dropdown", "dropdown_menu", "list"].includes(ft);
+              const isCheckbox = ft === "checkbox";
+              const isRadio = ft === "radio";
+              const isFile = ft === "file";
+              const isKnown =
+                isText || isTextarea || isEmail || isTel || isNumber || isDate || isSelect || isCheckbox || isRadio || isFile;
 
               return (
                 <div key={field.id} className={`${widthClass(field.width)} space-y-2`}>
@@ -156,7 +170,7 @@ const FormPublicView = () => {
                     {field.label} {field.required && <span className="text-destructive">*</span>}
                   </Label>
 
-                  {field.field_type === "text" && (
+                  {(isText || !isKnown) && (
                     <Input
                       value={formData[field.id] || ""}
                       onChange={(e) => updateField(field.id, e.target.value)}
@@ -164,7 +178,7 @@ const FormPublicView = () => {
                     />
                   )}
 
-                  {field.field_type === "textarea" && (
+                  {isTextarea && (
                     <Textarea
                       value={formData[field.id] || ""}
                       onChange={(e) => updateField(field.id, e.target.value)}
@@ -173,7 +187,7 @@ const FormPublicView = () => {
                     />
                   )}
 
-                  {field.field_type === "email" && (
+                  {isEmail && (
                     <Input
                       type="email"
                       value={formData[field.id] || ""}
@@ -182,7 +196,7 @@ const FormPublicView = () => {
                     />
                   )}
 
-                  {field.field_type === "tel" && (
+                  {isTel && (
                     <Input
                       type="tel"
                       value={formData[field.id] || ""}
@@ -191,7 +205,7 @@ const FormPublicView = () => {
                     />
                   )}
 
-                  {field.field_type === "number" && (
+                  {isNumber && (
                     <Input
                       type="number"
                       value={formData[field.id] || ""}
@@ -200,7 +214,7 @@ const FormPublicView = () => {
                     />
                   )}
 
-                  {field.field_type === "date" && (
+                  {isDate && (
                     <Input
                       type="date"
                       value={formData[field.id] || ""}
@@ -208,7 +222,7 @@ const FormPublicView = () => {
                     />
                   )}
 
-                  {field.field_type === "select" && (
+                  {isSelect && (
                     <Select
                       value={formData[field.id] || ""}
                       onValueChange={(v) => updateField(field.id, v)}
@@ -217,14 +231,20 @@ const FormPublicView = () => {
                         <SelectValue placeholder={field.placeholder || "Sélectionner..."} />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.isArray(field.options) && (field.options as string[]).map((opt) => (
-                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                        ))}
+                        {Array.isArray(field.options) &&
+                          (field.options as any[])
+                            .map((opt) => (typeof opt === "string" ? opt : opt?.value ?? opt?.label ?? ""))
+                            .filter((opt) => opt && String(opt).trim() !== "")
+                            .map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
                       </SelectContent>
                     </Select>
                   )}
 
-                  {field.field_type === "checkbox" && (
+                  {isCheckbox && (
                     <div className="flex items-center gap-2 pt-1">
                       <Checkbox
                         checked={formData[field.id] === true}
@@ -234,21 +254,27 @@ const FormPublicView = () => {
                     </div>
                   )}
 
-                  {field.field_type === "radio" && (
+                  {isRadio && (
                     <RadioGroup
                       value={formData[field.id] || ""}
                       onValueChange={(v) => updateField(field.id, v)}
                     >
-                      {Array.isArray(field.options) && (field.options as string[]).map((opt) => (
-                        <div key={opt} className="flex items-center space-x-2">
-                          <RadioGroupItem value={opt} id={`${field.id}-${opt}`} />
-                          <Label htmlFor={`${field.id}-${opt}`} className="text-sm font-normal">{opt}</Label>
-                        </div>
-                      ))}
+                      {Array.isArray(field.options) &&
+                        (field.options as any[])
+                          .map((opt) => (typeof opt === "string" ? opt : opt?.value ?? opt?.label ?? ""))
+                          .filter((opt) => opt && String(opt).trim() !== "")
+                          .map((opt) => (
+                            <div key={opt} className="flex items-center space-x-2">
+                              <RadioGroupItem value={opt} id={`${field.id}-${opt}`} />
+                              <Label htmlFor={`${field.id}-${opt}`} className="text-sm font-normal">
+                                {opt}
+                              </Label>
+                            </div>
+                          ))}
                     </RadioGroup>
                   )}
 
-                  {field.field_type === "file" && (
+                  {isFile && (
                     <Input
                       type="file"
                       onChange={(e) => updateField(field.id, e.target.files?.[0]?.name || "")}

@@ -548,7 +548,15 @@ const InscriptionForm = () => {
                     <Label htmlFor={`custom_${field.id}`}>
                       {field.label} {field.required && "*"}
                     </Label>
-                    {field.field_type === "text" && (
+                    {(() => {
+                      const ft = (field.field_type || "text").toLowerCase();
+                      const isSelect = ["select", "dropdown", "dropdown_menu", "list"].includes(ft);
+                      const isNumber = ft === "number";
+                      const isCheckbox = ft === "checkbox";
+                      const isText = !isSelect && !isNumber && !isCheckbox;
+                      return (
+                        <>
+                    {isText && (
                       <Input
                         id={`custom_${field.id}`}
                         value={customValues[field.id] || ""}
@@ -559,7 +567,7 @@ const InscriptionForm = () => {
                         placeholder={field.label}
                       />
                     )}
-                    {field.field_type === "number" && (
+                    {isNumber && (
                       <Input
                         id={`custom_${field.id}`}
                         type="number"
@@ -571,7 +579,7 @@ const InscriptionForm = () => {
                         placeholder={field.label}
                       />
                     )}
-                    {field.field_type === "select" && (
+                    {isSelect && (
                       <>
                         <Select
                           value={customValues[field.id] || ""}
@@ -585,11 +593,14 @@ const InscriptionForm = () => {
                           </SelectTrigger>
                           <SelectContent>
                             {Array.isArray(field.options) &&
-                              (field.options as string[]).map((opt) => (
-                                <SelectItem key={opt} value={opt}>
-                                  {opt}
-                                </SelectItem>
-                              ))}
+                              (field.options as any[])
+                                .map((opt) => (typeof opt === "string" ? opt : opt?.value ?? opt?.label ?? ""))
+                                .filter((opt) => opt && String(opt).trim() !== "")
+                                .map((opt) => (
+                                  <SelectItem key={opt} value={opt}>
+                                    {opt}
+                                  </SelectItem>
+                                ))}
                           </SelectContent>
                         </Select>
                         {customValues[field.id] && /pr[ée]ciser/i.test(customValues[field.id]) && (
@@ -603,7 +614,7 @@ const InscriptionForm = () => {
                         )}
                       </>
                     )}
-                    {field.field_type === "checkbox" && (
+                    {isCheckbox && (
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <Checkbox
@@ -627,6 +638,9 @@ const InscriptionForm = () => {
                         </label>
                       </div>
                     )}
+                        </>
+                      );
+                    })()}
                     <FieldError field={`custom_${field.id}`} />
                   </div>
                 ))}
