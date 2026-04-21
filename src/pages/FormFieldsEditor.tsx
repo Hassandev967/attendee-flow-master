@@ -92,8 +92,9 @@ const FormFieldsEditor = () => {
     queryFn: async () => {
       const { data, error } = await supabase.from("dropdown_menus").select("*").order("name");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
+    initialData: [],
   });
 
   const addField = useMutation({
@@ -315,9 +316,13 @@ const FormFieldsEditor = () => {
                 <Select value={selectedDropdown} onValueChange={setSelectedDropdown}>
                   <SelectTrigger><SelectValue placeholder="Choisir un menu..." /></SelectTrigger>
                   <SelectContent>
-                    {dropdownMenus?.map((menu) => (
-                      <SelectItem key={menu.id} value={menu.id}>{menu.name}</SelectItem>
-                    ))}
+                    {(dropdownMenus ?? [])
+                      .filter((menu) => menu && menu.id && menu.name)
+                      .map((menu) => (
+                        <SelectItem key={menu.id} value={menu.id}>
+                          {menu.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 {!dropdownMenus?.length && (
