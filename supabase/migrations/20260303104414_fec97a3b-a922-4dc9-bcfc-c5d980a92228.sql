@@ -1,0 +1,1 @@
+ALTER TABLE public.participants ADD CONSTRAINT participants_email_unique UNIQUE (email);
