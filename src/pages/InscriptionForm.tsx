@@ -207,7 +207,7 @@ const InscriptionForm = () => {
         }
       }
 
-      const qrCode = `${window.location.origin}/inscription/${formationId}`;
+      const qrCode = `${window.location.origin}/presence/${formationId}/${data.email}`;
       return { qrCode, nom: `${data.civilite} ${data.nom} ${data.prenoms}` };
     },
     onSuccess: (result) => {
