@@ -207,7 +207,7 @@ const InscriptionForm = () => {
         }
       }
 
-      const qrCode = `${window.location.origin}/presence/${formationId}/${data.email}`;
+      const qrCode = `${window.location.origin}/inscription/${formationId}`;
       return { qrCode, nom: `${data.civilite} ${data.nom} ${data.prenoms}` };
     },
     onSuccess: (result) => {
@@ -433,7 +433,7 @@ const InscriptionForm = () => {
                 <SelectTrigger id="civilite" className="h-12 text-base">
                   <SelectValue placeholder="Sélectionner" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="notranslate" translate="no">
                   <SelectItem value="Monsieur">Monsieur</SelectItem>
                   <SelectItem value="Madame">Madame</SelectItem>
                   <SelectItem value="Mademoiselle">Mademoiselle</SelectItem>
@@ -574,7 +574,7 @@ const InscriptionForm = () => {
               <SelectTrigger className="h-12 text-base">
                 <SelectValue placeholder="Sélectionner (optionnel)" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="notranslate" translate="no">
                 {sources?.map((s) => (
                   <SelectItem key={s.id} value={s.id.toString()}>{s.nom}</SelectItem>
                 ))}
@@ -658,7 +658,7 @@ const InscriptionForm = () => {
                                 <SelectTrigger>
                                   <SelectValue placeholder="Sélectionner" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="notranslate" translate="no">
                                   {Array.isArray(field.options) &&
                                     (field.options as any[])
                                       .map((opt) =>
