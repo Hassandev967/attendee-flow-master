@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ import {
   Mail,
   Phone,
   MapPinned,
+  Info,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -106,6 +107,71 @@ const InscriptionForm = () => {
     },
   });
 
+  // ✅ Fonction de téléchargement du QR code
+  const downloadQRCode = (nom: string) => {
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Fond blanc
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const img = new Image();
+    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+
+      const link = document.createElement("a");
+      const nomFichier = nom
+        ? `qr-${nom.replace(/\s+/g, "-").toLowerCase()}.png`
+        : "qr-inscription.png";
+      link.download = nomFichier;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+
+      // ✅ Notification après téléchargement automatique
+      toast({
+        title: "📱 QR Code téléchargé !",
+        description:
+          "Ce QR code vous sera demandé le jour de l'événement pour confirmer votre présence. Conservez-le précieusement.",
+        duration: 8000,
+      });
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      toast({
+        title: "Erreur de téléchargement",
+        description:
+          "Le téléchargement automatique a échoué. Veuillez cliquer sur 'Télécharger à nouveau'.",
+        variant: "destructive",
+      });
+    };
+
+    img.src = url;
+  };
+
+  // ✅ Téléchargement automatique dès que la page de confirmation s'affiche
+  useEffect(() => {
+    if (submitted && qrCodeValue) {
+      // Délai de 800ms pour laisser le SVG se rendre dans le DOM
+      const timer = setTimeout(() => {
+        downloadQRCode(inscriptionInfo?.nom || "");
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [submitted, qrCodeValue]);
+
   const mutation = useMutation({
     mutationFn: async (data: InscriptionData) => {
       const nomComplet = `${data.civilite} ${data.nom} ${data.prenoms}`;
@@ -148,7 +214,11 @@ const InscriptionForm = () => {
       setQrCodeValue(result.qrCode);
       setInscriptionInfo({ nom: result.nom });
       setSubmitted(true);
-      toast({ title: "Inscription confirmée !", description: "Votre QR code a été généré." });
+      toast({
+        title: "✅ Inscription confirmée !",
+        description: "Votre QR code est en cours de téléchargement...",
+        duration: 4000,
+      });
     },
     onError: (err: any) => {
       const msg = err.message?.includes("uq_inscription")
@@ -180,7 +250,6 @@ const InscriptionForm = () => {
       setErrors(fieldErrors);
       return;
     }
-    // Validate required custom fields
     if (customFields) {
       const customErrors: Record<string, string> = {};
       for (const f of customFields) {
@@ -196,23 +265,9 @@ const InscriptionForm = () => {
     mutation.mutate(result.data);
   };
 
+  // ✅ Bouton de téléchargement manuel
   const handleDownloadQR = () => {
-    const svg = document.getElementById("qr-code-svg");
-    if (!svg) return;
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      const link = document.createElement("a");
-      link.download = `qr-inscription.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    downloadQRCode(inscriptionInfo?.nom || "");
   };
 
   if (isLoading) {
@@ -231,8 +286,6 @@ const InscriptionForm = () => {
     );
   }
 
-
-
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -244,7 +297,8 @@ const InscriptionForm = () => {
             <h2 className="text-xl font-semibold text-foreground mb-1">Inscription confirmée !</h2>
             <p className="text-sm text-muted-foreground mb-1">{inscriptionInfo?.nom}</p>
             <p className="text-xs text-muted-foreground mb-6">
-              {formation.titre} — {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
+              {formation.titre} —{" "}
+              {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
             </p>
 
             <div className="bg-background rounded-xl p-6 border border-border mb-4 inline-block">
@@ -259,15 +313,31 @@ const InscriptionForm = () => {
               />
             </div>
 
+            {/* ✅ Bannière d'information importante */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 text-left">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800 mb-1">
+                    Important — Conservez ce QR code
+                  </p>
+                  <p className="text-xs text-amber-700">
+                    Ce QR code vous sera demandé le jour de l'événement pour confirmer
+                    votre présence. Il a été automatiquement téléchargé sur votre appareil.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <p className="text-xs text-muted-foreground mb-4">
               <QrCode className="w-3.5 h-3.5 inline mr-1" />
-              Conservez ce QR code pour accéder à la formation
+              Le QR code a été téléchargé automatiquement sur votre appareil
             </p>
 
             <div className="flex flex-col gap-2">
               <Button onClick={handleDownloadQR} variant="outline" className="gap-2">
                 <Download className="w-4 h-4" />
-                Télécharger le QR code
+                Télécharger à nouveau
               </Button>
               <Button variant="ghost" onClick={() => navigate("/")} className="text-sm">
                 Voir les autres formations
@@ -285,7 +355,6 @@ const InscriptionForm = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="border-b border-border bg-green-700">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between gap-3">
           <div>
@@ -296,21 +365,27 @@ const InscriptionForm = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-green-100 hover:text-white transition-colors shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Retour aux formations</span>
+            <ArrowLeft className="w-4 h-4" />{" "}
+            <span className="hidden sm:inline">Retour aux formations</span>
             <span className="sm:hidden">Retour</span>
           </button>
         </div>
       </header>
 
-      {/* Content full-width */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
         <div className="stat-card mb-6">
           {formation.image_url && (
             <div className="w-32 h-32 rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center mb-4">
-              <img src={formation.image_url} alt={formation.titre} className="max-w-full max-h-full object-contain" />
+              <img
+                src={formation.image_url}
+                alt={formation.titre}
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
           )}
-          <span className="text-xs font-medium text-accent uppercase tracking-wide">{formation.theme}</span>
+          <span className="text-xs font-medium text-accent uppercase tracking-wide">
+            {formation.theme}
+          </span>
           <h1 className="text-2xl font-bold text-foreground mt-2">{formation.titre}</h1>
           <div className="mt-4 space-y-2 text-lg text-muted-foreground">
             <p className="flex items-center gap-2">
@@ -322,7 +397,7 @@ const InscriptionForm = () => {
               <Calendar className="w-5 h-5 text-accent" />
               <span className="font-semibold text-foreground">Date :</span>{" "}
               {format(new Date(formation.date_debut), "d MMMM yyyy", { locale: fr })}
-            </p>{" "}
+            </p>
             {formation.duree && (
               <p className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-accent" />
@@ -332,7 +407,8 @@ const InscriptionForm = () => {
             {formation.lieu && (
               <p className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-accent" />
-                <span className="font-semibold text-foreground">Lieu de Formation :</span> {formation.lieu}
+                <span className="font-semibold text-foreground">Lieu de Formation :</span>{" "}
+                {formation.lieu}
               </p>
             )}
             <p className="flex items-center gap-2">
@@ -352,9 +428,7 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="civilite" className="text-base font-semibold">
-                Civilité *
-              </Label>
+              <Label htmlFor="civilite" className="text-base font-semibold">Civilité *</Label>
               <Select value={formData.civilite || ""} onValueChange={(v) => updateField("civilite", v)}>
                 <SelectTrigger id="civilite" className="h-12 text-base">
                   <SelectValue placeholder="Sélectionner" />
@@ -368,9 +442,7 @@ const InscriptionForm = () => {
               <FieldError field="civilite" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nom" className="text-base font-semibold">
-                Nom *
-              </Label>
+              <Label htmlFor="nom" className="text-base font-semibold">Nom *</Label>
               <Input
                 id="nom"
                 className="h-12 text-base"
@@ -381,9 +453,7 @@ const InscriptionForm = () => {
               <FieldError field="nom" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prenoms" className="text-base font-semibold">
-                Prénom(s) *
-              </Label>
+              <Label htmlFor="prenoms" className="text-base font-semibold">Prénom(s) *</Label>
               <Input
                 id="prenoms"
                 className="h-12 text-base"
@@ -394,9 +464,7 @@ const InscriptionForm = () => {
               <FieldError field="prenoms" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fonction" className="text-base font-semibold">
-                Fonction / Poste *
-              </Label>
+              <Label htmlFor="fonction" className="text-base font-semibold">Fonction / Poste *</Label>
               <Input
                 id="fonction"
                 className="h-12 text-base"
@@ -410,9 +478,7 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="nom_entreprise" className="text-base font-semibold">
-                Raison sociale *
-              </Label>
+              <Label htmlFor="nom_entreprise" className="text-base font-semibold">Raison sociale *</Label>
               <Input
                 id="nom_entreprise"
                 className="h-12 text-base"
@@ -426,9 +492,7 @@ const InscriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-base font-semibold">
-                Email *
-              </Label>
+              <Label htmlFor="email" className="text-base font-semibold">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -440,9 +504,7 @@ const InscriptionForm = () => {
               <FieldError field="email" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="telephone" className="text-base font-semibold">
-                Téléphone *
-              </Label>
+              <Label htmlFor="telephone" className="text-base font-semibold">Téléphone *</Label>
               <Input
                 id="telephone"
                 type="tel"
@@ -492,7 +554,10 @@ const InscriptionForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-base font-semibold">Comment avez-vous entendu parler de nous ? <span className="text-destructive">*</span></Label>
+            <Label className="text-base font-semibold">
+              Comment avez-vous entendu parler de nous ?{" "}
+              <span className="text-destructive">*</span>
+            </Label>
             <Select
               value={autreSource ? "autre" : formData.source_id?.toString() || ""}
               onValueChange={(v) => {
@@ -511,9 +576,7 @@ const InscriptionForm = () => {
               </SelectTrigger>
               <SelectContent>
                 {sources?.map((s) => (
-                  <SelectItem key={s.id} value={s.id.toString()}>
-                    {s.nom}
-                  </SelectItem>
+                  <SelectItem key={s.id} value={s.id.toString()}>{s.nom}</SelectItem>
                 ))}
                 <SelectItem value="autre">Autre</SelectItem>
               </SelectContent>
@@ -526,18 +589,18 @@ const InscriptionForm = () => {
                 className="mt-2 h-12 text-base"
               />
             )}
-            {!autreSource && sources?.find((s) => s.id === formData.source_id && s.nom === "Partenariat") && (
-              <Input
-                value={autreSourceTexte}
-                onChange={(e) => setAutreSourceTexte(e.target.value)}
-                placeholder="Préciser le partenariat..."
-                className="mt-2 h-12 text-base"
-              />
-            )}
+            {!autreSource &&
+              sources?.find((s) => s.id === formData.source_id && s.nom === "Partenariat") && (
+                <Input
+                  value={autreSourceTexte}
+                  onChange={(e) => setAutreSourceTexte(e.target.value)}
+                  placeholder="Préciser le partenariat..."
+                  className="mt-2 h-12 text-base"
+                />
+              )}
             <FieldError field="source_id" />
           </div>
 
-          {/* Custom fields */}
           {customFields && customFields.length > 0 && (
             <>
               <hr className="border-border" />
@@ -556,88 +619,96 @@ const InscriptionForm = () => {
                       const isText = !isSelect && !isNumber && !isCheckbox;
                       return (
                         <>
-                    {isText && (
-                      <Input
-                        id={`custom_${field.id}`}
-                        value={customValues[field.id] || ""}
-                        onChange={(e) => {
-                          setCustomValues((prev) => ({ ...prev, [field.id]: e.target.value }));
-                          setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                        }}
-                        placeholder={field.label}
-                      />
-                    )}
-                    {isNumber && (
-                      <Input
-                        id={`custom_${field.id}`}
-                        type="number"
-                        value={customValues[field.id] || ""}
-                        onChange={(e) => {
-                          setCustomValues((prev) => ({ ...prev, [field.id]: e.target.value }));
-                          setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                        }}
-                        placeholder={field.label}
-                      />
-                    )}
-                    {isSelect && (
-                      <>
-                        <Select
-                          value={customValues[field.id] || ""}
-                          onValueChange={(v) => {
-                            setCustomValues((prev) => ({ ...prev, [field.id]: v, [`${field.id}_preciser`]: "" }));
-                            setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.isArray(field.options) &&
-                              (field.options as any[])
-                                .map((opt) => (typeof opt === "string" ? opt : opt?.value ?? opt?.label ?? ""))
-                                .filter((opt) => opt && String(opt).trim() !== "")
-                                .map((opt) => (
-                                  <SelectItem key={opt} value={opt}>
-                                    {opt}
-                                  </SelectItem>
-                                ))}
-                          </SelectContent>
-                        </Select>
-                        {customValues[field.id] && /pr[ée]ciser/i.test(customValues[field.id]) && (
-                          <Input
-                            value={customValues[`${field.id}_preciser`] || ""}
-                            onChange={(e) =>
-                              setCustomValues((prev) => ({ ...prev, [`${field.id}_preciser`]: e.target.value }))
-                            }
-                            placeholder="À préciser..."
-                          />
-                        )}
-                      </>
-                    )}
-                    {isCheckbox && (
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={customValues[field.id] === "true"}
-                            onCheckedChange={() => {
-                              setCustomValues((prev) => ({ ...prev, [field.id]: "true" }));
-                              setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                            }}
-                          />
-                          <span className="text-sm">Oui</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={customValues[field.id] === "false"}
-                            onCheckedChange={() => {
-                              setCustomValues((prev) => ({ ...prev, [field.id]: "false" }));
-                              setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
-                            }}
-                          />
-                          <span className="text-sm">Non</span>
-                        </label>
-                      </div>
-                    )}
+                          {isText && (
+                            <Input
+                              id={`custom_${field.id}`}
+                              value={customValues[field.id] || ""}
+                              onChange={(e) => {
+                                setCustomValues((prev) => ({ ...prev, [field.id]: e.target.value }));
+                                setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                              }}
+                              placeholder={field.label}
+                            />
+                          )}
+                          {isNumber && (
+                            <Input
+                              id={`custom_${field.id}`}
+                              type="number"
+                              value={customValues[field.id] || ""}
+                              onChange={(e) => {
+                                setCustomValues((prev) => ({ ...prev, [field.id]: e.target.value }));
+                                setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                              }}
+                              placeholder={field.label}
+                            />
+                          )}
+                          {isSelect && (
+                            <>
+                              <Select
+                                value={customValues[field.id] || ""}
+                                onValueChange={(v) => {
+                                  setCustomValues((prev) => ({
+                                    ...prev,
+                                    [field.id]: v,
+                                    [`${field.id}_preciser`]: "",
+                                  }));
+                                  setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sélectionner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.isArray(field.options) &&
+                                    (field.options as any[])
+                                      .map((opt) =>
+                                        typeof opt === "string" ? opt : opt?.value ?? opt?.label ?? ""
+                                      )
+                                      .filter((opt) => opt && String(opt).trim() !== "")
+                                      .map((opt) => (
+                                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                      ))}
+                                </SelectContent>
+                              </Select>
+                              {customValues[field.id] &&
+                                /pr[ée]ciser/i.test(customValues[field.id]) && (
+                                  <Input
+                                    value={customValues[`${field.id}_preciser`] || ""}
+                                    onChange={(e) =>
+                                      setCustomValues((prev) => ({
+                                        ...prev,
+                                        [`${field.id}_preciser`]: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="À préciser..."
+                                  />
+                                )}
+                            </>
+                          )}
+                          {isCheckbox && (
+                            <div className="flex items-center gap-4">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={customValues[field.id] === "true"}
+                                  onCheckedChange={() => {
+                                    setCustomValues((prev) => ({ ...prev, [field.id]: "true" }));
+                                    setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                                  }}
+                                />
+                                <span className="text-sm">Oui</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={customValues[field.id] === "false"}
+                                  onCheckedChange={() => {
+                                    setCustomValues((prev) => ({ ...prev, [field.id]: "false" }));
+                                    setErrors((prev) => ({ ...prev, [`custom_${field.id}`]: "" }));
+                                  }}
+                                />
+                                <span className="text-sm">Non</span>
+                              </label>
+                            </div>
+                          )}
                         </>
                       );
                     })()}
@@ -671,36 +742,20 @@ const InscriptionFooter = () => (
         <img src={ciExportLogo} alt="Agence CI Export" className="h-14 object-contain" />
         <p className="text-sm text-zinc-400">Agence Côte d'Ivoire Export</p>
         <div className="flex gap-3 pt-2">
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
-          >
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
             <Facebook className="w-4 h-4 text-white" />
           </a>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
-          >
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
             <Instagram className="w-4 h-4 text-white" />
           </a>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
-          >
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
             <Twitter className="w-4 h-4 text-white" />
           </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors"
-          >
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center hover:bg-orange-600 transition-colors">
             <Linkedin className="w-4 h-4 text-white" />
           </a>
         </div>
@@ -725,29 +780,10 @@ const InscriptionFooter = () => (
       <div className="space-y-4">
         <h3 className="text-white font-semibold text-lg">Navigation</h3>
         <ul className="space-y-2 text-sm">
-          <li>
-            <a href="/" className="hover:text-orange-400 transition-colors">
-              Accueil
-            </a>
-          </li>
-          <li>
-            <a href="https://cotedivoirexport.ci/a-propos/" className="hover:text-orange-400 transition-colors">
-              A propos
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://cotedivoirexport.ci/offres-de-services/"
-              className="hover:text-orange-400 transition-colors"
-            >
-              Offres de services
-            </a>
-          </li>
-          <li>
-            <a href="https://cotedivoirexport.ci/programmes/" className="hover:text-orange-400 transition-colors">
-              Programmes
-            </a>
-          </li>
+          <li><a href="/" className="hover:text-orange-400 transition-colors">Accueil</a></li>
+          <li><a href="https://cotedivoirexport.ci/a-propos/" className="hover:text-orange-400 transition-colors">A propos</a></li>
+          <li><a href="https://cotedivoirexport.ci/offres-de-services/" className="hover:text-orange-400 transition-colors">Offres de services</a></li>
+          <li><a href="https://cotedivoirexport.ci/programmes/" className="hover:text-orange-400 transition-colors">Programmes</a></li>
         </ul>
       </div>
       <div className="space-y-4">
@@ -761,12 +797,8 @@ const InscriptionFooter = () => (
       <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-2">
         <span>© Copyright 2025 Agence Côte d'Ivoire Export</span>
         <div className="flex gap-4">
-          <a href="#" className="hover:text-zinc-300 transition-colors">
-            Politique de confidentialité
-          </a>
-          <a href="#" className="hover:text-zinc-300 transition-colors">
-            Cookies
-          </a>
+          <a href="#" className="hover:text-zinc-300 transition-colors">Politique de confidentialité</a>
+          <a href="#" className="hover:text-zinc-300 transition-colors">Cookies</a>
         </div>
       </div>
     </div>
