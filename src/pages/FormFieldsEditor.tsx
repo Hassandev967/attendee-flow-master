@@ -313,11 +313,14 @@ const FormFieldsEditor = () => {
             {fieldType === "dropdown_menu" && (
               <div className="space-y-2">
                 <Label>Menu déroulant réutilisable</Label>
-                <Select value={selectedDropdown} onValueChange={setSelectedDropdown}>
+                <Select
+                  value={selectedDropdown || undefined}
+                  onValueChange={setSelectedDropdown}
+                >
                   <SelectTrigger><SelectValue placeholder="Choisir un menu..." /></SelectTrigger>
                   <SelectContent>
                     {(dropdownMenus ?? [])
-                      .filter((menu) => menu && menu.id && menu.name)
+                      .filter((menu) => menu && typeof menu.id === "string" && menu.id.length > 0 && menu.name)
                       .map((menu) => (
                         <SelectItem key={menu.id} value={menu.id}>
                           {menu.name}
